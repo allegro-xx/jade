@@ -2757,7 +2757,6 @@ def get_summarytab(objYearMonth):
 #     genretable = get_genressummarytable(objYearMonth)
 
     genretable = get_genressummarytableFP(objYearMonth)
-
     footertext = """
           <ul class="pager">
             {}
@@ -3962,6 +3961,8 @@ def get_monthly_htmlheader(objYearMonth):
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="robots" content="noarchive">
   <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
   <title>Garnet Reports (ZAIM)</title>
 
@@ -4123,6 +4124,8 @@ def build_index():
           <meta charset="utf-8">
           <meta http-equiv="X-UA-Compatible" content="IE=edge">
           <meta name="viewport" content="width=device-width, initial-scale=1">
+          <meta name="robots" content="noindex,nofollow">
+          <meta name="robots" content="noarchive">
           <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
           <title>Garnet Reports (ZAIM)</title>
 
@@ -6900,6 +6903,8 @@ def get_quarterly_htmlheader(objYear):
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="robots" content="noarchive">
   <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
   <title>Garnet Reports (ZAIM)</title>
 
@@ -8565,7 +8570,7 @@ def get_genressummaly(objYearMonth):
             # 0ヶ月前のジャンルごとの合計金額
 
 #             aveamount = (samount0+samount1+samount2)/3
-            aveamount = (samount1+samount2)/3
+            aveamount = (samount1+samount2)/2
             
             if aveamount==0:aveamount=1
             ratio = samount0/aveamount
@@ -8610,7 +8615,9 @@ def getBiggerAmountforReport(monthlyamounts, objYearMonth):
     m = sratios[t]
     i = ratios.index(m)
 
-    while f[i][1]['y1']+f[i][1]['y2'] == 0:
+    while f[i][1]['y1']+f[i][1]['y2'] <= 1000 or f[i][1]['y0'] <= 3000:
+        # 最小値判定を入れる
+        # 先月 + 先々月 >= 1000 and 今月 > 3000
         t = t -1
         m = sratios[t]
         i = ratios.index(m)
@@ -8692,7 +8699,7 @@ def getBiggerAmountforReport(monthlyamounts, objYearMonth):
     
     
     genreratio = f[i0][0][1]
-    text1genre = getBiggerAmountinGenreforReport(objYearMonth, genreratio)
+    # text1genre = getBiggerAmountinGenreforReport(objYearMonth, genreratio)
     text1genre = getBiggerAmountinGenreforReport(objYearMonth, genre1)
     textdoublegenre = getBiggerAmountinGenreforReport(objYearMonth, genre1)
 
@@ -11000,6 +11007,8 @@ def get_yearly_htmlheader():
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="robots" content="noarchive">
   <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
   <title>Garnet Reports (ZAIM)</title>
 
