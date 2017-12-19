@@ -8616,9 +8616,15 @@ def getBiggerAmountforReport(monthlyamounts, objYearMonth):
     i = ratios.index(m)
 
     while f[i][1]['y1']+f[i][1]['y2'] <= 1000 or f[i][1]['y0'] <= 3000:
+        if f[i][1]['y0'] > 17500:
+            break
         # 最小値判定を入れる
         # 先月 + 先々月 >= 1000 and 今月 > 3000
         t = t -1
+        if sratios[t] < 2:
+            t= t + 1
+            break
+
         m = sratios[t]
         i = ratios.index(m)
 
@@ -8720,10 +8726,13 @@ def getBiggerAmountinGenreforReport(objYearMonth, objGenres):
     gm = max(gr)
     gi = gr.index(gm)
     xday = datetxt2class(g0[gi][1])
-
+    if g0[gi][2] == '':
+        place = m[gi]['name']
+    else:
+        place = g0[gi][2]+'での買い物'
 #     g0[gi]
-    textgenre = "このジャンル({})の中で特に大きい支出は{}日の{}での買い物で{:,}円です。ジャンルのうち{}%を占めます".format(
-        m[0]['genre'],xday.day, g0[gi][2], round500(g0[gi][0]), round(gm*100/5)*5)
+    textgenre = "このジャンル({})の中で特に大きい支出は{}日の{}で{:,}円です。ジャンルのうち{}%を占めます".format(
+        m[0]['genre'],xday.day, place, round500(g0[gi][0]), round(gm*100/5)*5)
 
     # TOP3
     g2 = sorted(g1)
