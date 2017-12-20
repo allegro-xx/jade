@@ -4826,6 +4826,11 @@ def get_reporttabbody(objYearMonth):
 # In[68]:
 
 def marge_AyashiiData(outaccountdata, outcategorydata, outgenredata):
+    oaccountlist = [(x['date'], x['place'],x['category'], x['genre']) for x in outaccountdata]
+    ocatlist = [(x['date'], x['place'],x['category'], x['genre']) for x in outcategorydata]
+    ogenrelist = [(x['date'], x['place'],x['category'], x['genre']) for x in outgenredata]
+
+
     m = []
     for m0 in outaccountdata:
         mt = {}
@@ -4833,19 +4838,34 @@ def marge_AyashiiData(outaccountdata, outcategorydata, outgenredata):
             mt[keys] = m0[keys]
         mt['from_account'] = "<u>{}</u>".format(m0['from_account'])
         m.append(mt)
+
     for m0 in outcategorydata:
-        mt = {}
-        for keys in m0.keys():
-            mt[keys] = m0[keys]
-        mt['category'] = "<u>{}</u>".format(m0['category'])
-        m.append(mt)
+        mt0 = (m0['date'], m0['place'], m0['category'], m0['genre'])
+        if mt0 in oaccountlist:
+            mt1 =  [[x['date'], x['place'], x['category'], x['genre']] for x in m]
+            indx = mt1.index(mt0)
+
+            m[indx]['category'] = "<u>{}</u>".format(m0['category'])
+        else:
+            mt = {}
+            for keys in m0.keys():
+                mt[keys] = m0[keys]
+            mt['category'] = "<u>{}</u>".format(m0['category'])
+            m.append(mt)
 
     for m0 in outgenredata:
-        mt = {}
-        for keys in m0.keys():
-            mt[keys] = m0[keys]
-        mt['genre'] = "<u>{}</u>".format(m0['genre'])
-        m.append(mt)
+        mt0 = (m0['date'], m0['place'], m0['category'], m0['genre'])
+        if mt0 in oaccountlist or mt0 in ocatlist:
+            mt1 =  [[x['date'], x['place'],  x['genre']] for x in m]
+            indx = mt1.index([m0['date'], m0['place'], m0['genre']])
+
+            m[indx]['genre'] = "<u>{}</u>".format(m0['genre'])
+        else:
+            mt = {}
+            for keys in m0.keys():
+                mt[keys] = m0[keys]
+            mt['genre'] = "<u>{}</u>".format(m0['genre'])
+            m.append(mt)
 
 
         
