@@ -162,6 +162,19 @@ def get_monthlyfrontgraph(objYearMonth):
     yearlyamountratio = int(tyearamount/lyearamount*100*10)/10
 
 
+    # 先月までの計
+    if objYearMonth[1] == 1:
+        monthlyratedelta = 0
+    else:
+        objYearMonthes0 = []
+        for m in range (1,objYearMonth[1]):
+            objYearMonthes0.append((objYearMonth[0], m))
+        tyearamount0 = get_monthes_amount(objYearMonthes0)['all']
+
+        yearlyamountratio0 = int(tyearamount0/lyearamount*100*10)/10
+        monthlyratedelta = int((yearlyamountratio - yearlyamountratio0)*10)/10
+
+
     headergraph1 = """
         <h4>{y}年{m}月のレポート</h4>
         <a href="./i/m{y}-{m:02}.html">iPhone版はこちら</a>
@@ -189,10 +202,10 @@ def get_monthlyfrontgraph(objYearMonth):
         yen=tyearamount)
     ritsu = """btn-{btndec}">
         <small class="text-info">{y}年の{m}月までの前年比<br>使用率</small>
-        <br>{ratio}%""".format(
+        <br>{ratio}% <small>Δ+{deltar}%</small>""".format(
         btndec = btndecoration, 
         y=objYearMonth[0],m=objYearMonth[1],
-        ratio=yearlyamountratio)
+        ratio=yearlyamountratio, deltar = monthlyratedelta)
 
 
     headergraph2 = """
