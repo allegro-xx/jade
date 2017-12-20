@@ -8935,6 +8935,21 @@ def getYearlyTatekae(objYearMonth):
 
 # In[118]:
 
+def getCreditCardtextforReport(objYearMonth):
+
+    AccountCreditCard = 7992077
+    moneylist = select_fromAccount(objYearMonth,AccountCreditCard)
+
+    num = len(set((x['date'],x['place']) for x in moneylist))
+    ammount = sum([x['amount'] for x in moneylist])
+
+
+    otext = """今月のクレジットカード支払いは{:,}円、{}件でした。""".format(
+        round500(ammount), num)
+
+    return otext
+
+
 def getTatekaetextforReport(objYearMonth):
     objDT0 = objYearMonth 
     (m0rin, m0rout) = get_monthlyRent(objDT0)
@@ -9012,6 +9027,7 @@ def getReportText(objYearMonth):
     textsyokuzai = getFoodforReport(objYearMonth)
     textgaisyoku = getRestaurantforReport(objYearMonth)
     texttatekae = getTatekaetextforReport(objYearMonth)
+    textccard = getCreditCardtextforReport(objYearMonth)
     textsum = getMonthlydeltaforReport(objYearMonth)
     # print(o)
     obj = [10103]
@@ -9024,13 +9040,14 @@ def getReportText(objYearMonth):
     <p>{biggenre0}<br>
     {biguchiwake3}</p>
 
-    <p>また{big35}</p>
+    <p>また、{big35}</p>
     <p>{tatekae}</p>
+    <p>また、{ccard}</p>
     
     <p>{syokuzai}<br>
     また、{gaisyoku}</p>""".format(tsum=textsum, gaisyoku=textgaisyoku, tatekae=texttatekae,
                         biggenre0 = textbig[0], biguchiwake3 = textbig[3][0], big35 = textbig[6],
-                                syokuzai = textsyokuzai
+                                syokuzai = textsyokuzai, ccard = textccard
                        )
 
 
