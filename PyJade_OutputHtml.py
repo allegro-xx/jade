@@ -4759,8 +4759,9 @@ def get_reporttabbody(objYearMonth):
     
     
     # 立て替えリスト
-    renttable = get_renttable(objYearMonth)
-    
+    #renttable = get_renttable(objYearMonth)
+    renttable = ""
+
 #     # 支払い以外リスト (口座)
     tabletitle = "入金・振り替えリスト"
     moneydata = select_nonPaymentData(objYearMonth)
