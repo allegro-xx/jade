@@ -2888,14 +2888,15 @@ def get_yearly_summarytab_body(objYear):
         comment = inputcomment("quarter", str(objYear), "q"+str(cnt+1))
         
         mtable = monthlytableforYsummary((objYear,cnt*3+3))
-        qt = """<div class="panel panel-primary" id="q{}">
-        <div class="panel-heading">
-        {}年Q{}
+        qt = """<div class="panel panel-primary" id="q{quarter}">
+        <div class="panel-heading" data-toggle="collapse" data-target="#q{quarter}body">
+        {year}年Q{quarter}
         </div>
-        <div class="panel-body">
-        {}
+        <div class="panel-body panel-collapse collapse in" id="q{quarter}body">
+        {textbody}
         </div>
-        </div>""".format(cnt+1, objYear, cnt+1, check[cnt] + htext + comment + category[cnt] + amount[cnt]+ mtable + catn[cnt] + expensive[cnt])
+        </div>""".format(quarter=cnt+1, year=objYear,
+                         textbody = check[cnt] + htext + comment + category[cnt] + amount[cnt]+ mtable + catn[cnt] + expensive[cnt])
 #         </div>""".format(objYear, cnt+1, check[cnt] + category[cnt]+ delta[cnt]+ amount[cnt]+ mtable + catn[cnt] + expensive[cnt])
 
         
@@ -6879,11 +6880,11 @@ def get_yearly_summarytab_header(objYear):  # rev2.3
               </ul>
               
               <ul class="btn-group btn-group-justified  btn-group-sm" role="group" aria-label="testa" style="padding-left:0px;">
-                <li type="button" class="btn btn-default"><a href="#q1">Q1</a></button>
-                <li type="button" class="btn btn-default"><a href="#q2">Q2</a></button>
-                <li type="button" class="btn btn-default"><a href="#q3">Q3</a></button>
-                <li type="button" class="btn btn-default"><a href="#q4">Q4</a></button>
-                <li type="button" class="btn btn-default"><a href="#year">Year</a></button>
+                <li type="button" class="btn btn-default" data-toggle="collapse" data-target="#q1body"><a href="#q1">Q1</a></button>
+                <li type="button" class="btn btn-default" data-toggle="collapse" data-target="#q2body"><a href="#q2">Q2</a></button>
+                <li type="button" class="btn btn-default" data-toggle="collapse" data-target="#q3body"><a href="#q3">Q3</a></button>
+                <li type="button" class="btn btn-default" data-toggle="collapse" data-target="#q4body"><a href="#q4">Q4</a></button>
+                <li type="button" class="btn btn-default" data-toggle="collapse" data-target="#yearbody"><a href="#year">Year</a></button>
               </ul>
 
 
