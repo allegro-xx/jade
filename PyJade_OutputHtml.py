@@ -1269,14 +1269,14 @@ def select_RawExpenceDataYsummary(objYearMonth):
     # 含む　　 ['公共料金', 105]
     # 含まない ['口座出納', 28593839]
     # 含む　　 ['社会保障', 25504225]
-    # 含まない ['住まい', 28269167]
-    # 含まない [28694950 小遣い]
+    # 含む　　 ['住まい', 28269167]
+    # 含む　　 ['小遣い', 28694950]
     
     select = """select amount, zaim_date as date, category, category_id, genre, genre_id,
     place, name, from_account 
     from {tablename} 
     where zaim_date like '{year}-{month:02}-%' and 
-    category_id not in (28269167, 28694950, 28593839)  and 
+    category_id not in (28593839)  and 
     mode=='payment' 
     order by zaim_date 
     ;""".format(
@@ -3415,7 +3415,9 @@ def get_yearly_summarytab_text(objYear):
 
     def build_expensives(expensives): #rev2.3
 
-        key = 25504225 # rev2.4 社会保障は除く
+        key0 = 25504225 # rev2.4 社会保障は除く
+        key1 = 28269167 # rev2.4 住まい
+        key2 = 28694950 # rev2.4 小遣い
 
         tableh0 = """
         <!-- output from PyJade -->
@@ -3449,23 +3451,35 @@ def get_yearly_summarytab_text(objYear):
             
             num = 0
             yen = 0
+            num0 = 0
+            yen0 = 0
+            num1 = 0
+            yen1 = 0
 
             for mlist in qlist:
                 for exp in mlist:
-                    atxt = """
+                    if exp['category_id'] == key0:
+                        num0 += 1
+                        yen0 += exp['amount']
+                    elif exp['category_id'] in (key1, key2):
+                        num1 += 1
+                        yen1 += exp['amount']
+                    else:
+                        atxt = """
                         \n\t\t<tr>\n\t\t\t<td>{month}月{day}日</td>\n\t\t\t<td>¥{amount:,}</td>
                         \t\t\t<td>{cat}</td>\n\t\t\t<td style="text-align:left;padding-left:1em">{place}</td>
                         \t\t\t<td style="text-align:left;padding-left:1em">{name}</td>\n\t\t</tr>
-                        """.format( month=int(exp['date'][5:7]),day=int(exp['date'][8:]), name=exp['name'], 
+                        """.format( month=int(exp['date'][5:7]),day=int(exp['date'][8:]), name=exp['name'],
                                         place=exp['place'], amount=round500(exp['amount']),cat=exp['category'])
-                    if exp['category_id'] != key:    
-                        txts.append(atxt)
-                    else:
-                        extxts.append(atxt)
-                    num += 1
-                    yen += exp['amount']
 
-            tableh1 = """\t<div class="panel-heading">4. 高額出費 (10,000円以上) {}件 ¥{:,} + 家賃&小遣い63万円</div>""".format(num, round500(yen))
+                        txts.append(atxt)
+                        num += 1
+                        yen += exp['amount']
+
+            tableh1 = """\t<div class="panel-heading">4. 高額出費 (10,000円以上) {}件 ¥{:,}<br />
+            \t<small>他: 社会保障/投資 {}件 ¥{:,}千円+ 家賃&小遣い{:,}千円</small></div>"""\
+                .format(num, round500(yen), num0, int(yen0/1000), int(yen1/1000))
+
 
             qtxt = tableh0 + tableh1 + tableh2 + '\n'.join(txts) + tablef
 
@@ -3660,7 +3674,7 @@ def totaltableforYsummary(qincome, qamount, qrent): #rev2.3
         summarytableh = """
         <!-- output from PyJade -->
         <div class="panel panel-default">
-        \t<div class="panel-heading">1. 入出金のまとめ</div>
+        \t<div class="panel-heading">1. 入出金のまとめ <small>*入金-出金+立替-立替清算で総計</small></div>
             <div class ="table-responsive">
                 <table class="table table-striped table-bordered table-hover table-condensed">
                     <thead class="bg-info">
