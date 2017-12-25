@@ -1447,6 +1447,70 @@ def get_monthlyamount(objYearMonth, numflg = False): #rev2.3
         return monthlyamount# ,testdata
 
 
+#rev2.4
+
+def get_monthlyamount2(objYearMonth): #rev2.3
+    catid = {}
+    genreid = {}
+    matome = {}
+    catid['食費'] = [101]
+    catid['教育'] = [25504271, 109] # '積)養育費', 25504271), 109 教育、教養,
+    catid['小遣い'] = [28694950]
+
+    catid['医療'] = [110]
+    catid['服飾'] = [111]
+    catid['娯楽'] = [107, 108] #'娯楽・交際'
+    catid['大型出費'] = [114]
+    catid['家財'] = [106]
+
+    catid['家賃'] =  [28269167,  28035336]
+    catid['公共料金'] = [105]
+    catid['社会保障C'] = [25504225]
+
+    genreid['社会保障'] = [9991459,9991538,9991544,9991553,13918033]
+    #医療保険, 医療保険, 年金, 住民税/所得税, 公文書出力
+    genreid['資産形成'] = [9991457,9991527,9991564,9991569,13918135,13918146,1111111]
+    # 生命保険, 生命保険, 学資保険, 奨学金, 確定拠出/投資,貯金,子供貯金
+
+    matome['生活費'] = catid['食費'] + catid['教育'] + catid['小遣い']
+    matome['変動費'] = catid['医療'] + catid['服飾'] + catid['娯楽'] + catid['大型出費'] + catid['家財']
+    matome['公共'] = catid['家賃'] + catid['公共料金'] + catid['社会保障C']
+
+    # (5) 生活費 : Category: ('食費•日用品', 101),
+    monthlyamount = {}
+    munthlyamountnum = {}
+    obj0 = []
+
+    def categoryamount(obj):
+        moneylist = select_CategoryData(objYearMonth, obj)
+        sumamount = sum([x['amount'] for x in moneylist])
+        numamount = len([x['amount'] for x in moneylist])
+        return sumamount, numamount
+
+    def genreamount(obj):
+        moneylist = select_GenreData(objYearMonth, obj)
+        sumamount = sum([x['amount'] for x in moneylist])
+        numamount = len([x['amount'] for x in moneylist])
+        return sumamount, numamount
+
+
+    for key in catid.keys():
+        monthlyamount[key], munthlyamountnum[key] = categoryamount(catid[key])
+        obj0+=catid[key]
+
+    for key in genreid.keys():
+        monthlyamount[key], munthlyamountnum[key] = genreamount(genreid[key])
+
+    for key in matome.keys():
+        monthlyamount[key], munthlyamountnum[key] = categoryamount(matome[key])
+
+
+    # All
+    obj1 = list(set(obj0))
+    key = 'all'
+    monthlyamount[key], munthlyamountnum[key] = categoryamount(obj1)
+
+    return monthlyamount, munthlyamountnum
 
 # In[34]:
 
@@ -3528,13 +3592,12 @@ def monthlytableforYsummary(objYearMonth): #rev2.3
     objDT0 = objYearMonth 
     objDT1 = get_lastmonth(objDT0)
     objDT2 = get_lastmonth(objDT1)
-    m0yen, m0num =get_monthlyamount(objDT0, True)
-    m1yen, m1num =get_monthlyamount(objDT1, True)
-    m2yen, m2num =get_monthlyamount(objDT2, True)
+    m0yen, m0num =get_monthlyamount2(objDT0)
+    m1yen, m1num =get_monthlyamount2(objDT1)
+    m2yen, m2num =get_monthlyamount2(objDT2)
 
 #     TH = 1500
-    mkey = ['食費', '光熱費', '通信費', '社会保障', '娯楽・交際', '医療・健康', '美容', '教育・養育', '大型出費', '住まい']
-    
+
     def gettr(key, yen): # yen = [yen2, yen1, yen0]
         t0 = """
                         <tr>
@@ -3564,6 +3627,35 @@ def monthlytableforYsummary(objYearMonth): #rev2.3
         return t0 + "".join(t1) + t2
 
 
+    def gettrh(key, yen): # yen = [yen2, yen1, yen0]
+        t0 = """
+                        <tr class="info">
+                            <td style="text-align:left;padding-left:1em;">{}</td>\n""".format(key)
+        t1 = []
+        t2 =  """
+                            <td style="text-align:right;padding-right:1em;"><small>¥{:,}</small></td>
+                        </tr>        
+        """.format(sum(yen))
+
+        ###
+        mincat = min(yen) * 2.25
+        aveth = 1.75
+        minth = 9500
+        maxth = 22000
+        sumcat= sum(yen)
+        mincat2 = min(yen) + maxth
+
+
+        for myen in yen:
+            avecat = (sumcat - myen)/2 * aveth
+            if (myen > avecat or myen > mincat or myen > mincat2) and myen > minth:
+                t1t = """\t\t\t\t<td style="color:red;text-align:right;padding-right:1em;"><small>¥{val:,}</small></td>\n""".format(val = round500(myen))
+            else:
+                t1t = """\t\t\t\t<td style="text-align:right;padding-right:1em;"><small>¥{val:,}</small></td>\n""".format(val = round500(myen))
+            t1.append(t1t)
+        return t0 + "".join(t1) + t2
+
+
     summarytableh = """
     <!-- output from PyJade -->
     <div class="panel panel-default">
@@ -3587,9 +3679,20 @@ def monthlytableforYsummary(objYearMonth): #rev2.3
             m2n = m2num['all'], m1n = m1num['all'], m0n = m0num['all'])
     
     st = []
-    for key in mkey:
-        st0 = gettr(key, [m2yen[key], m1yen[key], m0yen[key]])
+
+    mkey = {}
+    matomekey = ['生活費', '公共', '変動費']
+    mkey['生活費'] = ['食費', '教育','小遣い']
+    mkey['公共'] = ['公共料金','家賃','社会保障','資産形成']
+    mkey['変動費'] = ['医療', '服飾', '娯楽', '大型出費', '家財']
+
+    key0 = '生活費'
+    for key0 in matomekey:
+        st0 = gettrh(key0, [m2yen[key0], m1yen[key0], m0yen[key0]])
         st.append(st0)
+        for key in mkey[key0]:
+            st0 = gettr(key, [m2yen[key], m1yen[key], m0yen[key]])
+            st.append(st0)
 
 
     summarytablef =   """
@@ -3608,21 +3711,10 @@ def monthlytableforYsummary(objYearMonth): #rev2.3
             </div>
             </div>
     """.format(
-            key1 = '食費/生活費', 
-        key2 = '光熱費', 
-            key3 = '通信費', 
-            key4 = '社会保障', 
-            key5 = '娯楽・交際', 
-            key6 = '医療・健康', 
-            key7 = '美容', 
-            key8 = '教育・養育', 
-            key9 = '大型出費', 
-            keya = '住まい', 
-
         val0M0 = round500(m0yen['all']),
-            val0M1 = round500(m1yen['all']),
-            val0M2 = round500(m2yen['all']),
-                val0Ms = round500(m2yen['all'] + m1yen['all'] + m0yen['all'])
+        val0M1 = round500(m1yen['all']),
+        val0M2 = round500(m2yen['all']),
+        val0Ms = round500(m2yen['all'] + m1yen['all'] + m0yen['all'])
         )
     
 
@@ -11851,7 +11943,8 @@ def build_pyzaim(startYear=2016):
     
 #     objYears = range(2011,2017)
     objYears = range(startYear,y0)
-    objMonthes = range(1,13)
+    #objMonthes = range(1,13)
+    objMonthes = range(12,13)
 
     for objYear in objYears:
         for objMonth in objMonthes:
