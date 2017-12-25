@@ -162,6 +162,19 @@ def get_monthlyfrontgraph(objYearMonth):
     yearlyamountratio = int(tyearamount/lyearamount*100*10)/10
 
 
+    # 先月までの計
+    if objYearMonth[1] == 1:
+        monthlyratedelta = 0
+    else:
+        objYearMonthes0 = []
+        for m in range (1,objYearMonth[1]):
+            objYearMonthes0.append((objYearMonth[0], m))
+        tyearamount0 = get_monthes_amount(objYearMonthes0)['all']
+
+        yearlyamountratio0 = int(tyearamount0/lyearamount*100*10)/10
+        monthlyratedelta = int((yearlyamountratio - yearlyamountratio0)*10)/10
+
+
     headergraph1 = """
         <h4>{y}年{m}月のレポート</h4>
         <a href="./i/m{y}-{m:02}.html">iPhone版はこちら</a>
@@ -189,10 +202,10 @@ def get_monthlyfrontgraph(objYearMonth):
         yen=tyearamount)
     ritsu = """btn-{btndec}">
         <small class="text-info">{y}年の{m}月までの前年比<br>使用率</small>
-        <br>{ratio}%""".format(
+        <br>{ratio}% <small>Δ+{deltar}%</small>""".format(
         btndec = btndecoration, 
         y=objYearMonth[0],m=objYearMonth[1],
-        ratio=yearlyamountratio)
+        ratio=yearlyamountratio, deltar = monthlyratedelta)
 
 
     headergraph2 = """
@@ -1256,14 +1269,14 @@ def select_RawExpenceDataYsummary(objYearMonth):
     # 含む　　 ['公共料金', 105]
     # 含まない ['口座出納', 28593839]
     # 含む　　 ['社会保障', 25504225]
-    # 含まない ['住まい', 28269167]
-    # 含まない [28694950 小遣い]
+    # 含む　　 ['住まい', 28269167]
+    # 含む　　 ['小遣い', 28694950]
     
     select = """select amount, zaim_date as date, category, category_id, genre, genre_id,
     place, name, from_account 
     from {tablename} 
     where zaim_date like '{year}-{month:02}-%' and 
-    category_id not in (28269167, 28694950, 28593839)  and 
+    category_id not in (28593839)  and 
     mode=='payment' 
     order by zaim_date 
     ;""".format(
@@ -1434,6 +1447,70 @@ def get_monthlyamount(objYearMonth, numflg = False): #rev2.3
         return monthlyamount# ,testdata
 
 
+#rev2.4
+
+def get_monthlyamount2(objYearMonth): #rev2.3
+    catid = {}
+    genreid = {}
+    matome = {}
+    catid['食費'] = [101]
+    catid['教育'] = [25504271, 109] # '積)養育費', 25504271), 109 教育、教養,
+    catid['小遣い'] = [28694950]
+
+    catid['医療'] = [110]
+    catid['服飾'] = [111]
+    catid['娯楽'] = [107, 108] #'娯楽・交際'
+    catid['大型出費'] = [114]
+    catid['家財'] = [106]
+
+    catid['家賃'] =  [28269167,  28035336]
+    catid['公共料金'] = [105]
+    catid['社会保障C'] = [25504225]
+
+    genreid['社会保障'] = [9991459,9991538,9991544,9991553,13918033]
+    #医療保険, 医療保険, 年金, 住民税/所得税, 公文書出力
+    genreid['資産形成'] = [9991457,9991527,9991564,9991569,13918135,13918146,1111111]
+    # 生命保険, 生命保険, 学資保険, 奨学金, 確定拠出/投資,貯金,子供貯金
+
+    matome['生活費'] = catid['食費'] + catid['教育'] + catid['小遣い']
+    matome['変動費'] = catid['医療'] + catid['服飾'] + catid['娯楽'] + catid['大型出費'] + catid['家財']
+    matome['公共'] = catid['家賃'] + catid['公共料金'] + catid['社会保障C']
+
+    # (5) 生活費 : Category: ('食費•日用品', 101),
+    monthlyamount = {}
+    munthlyamountnum = {}
+    obj0 = []
+
+    def categoryamount(obj):
+        moneylist = select_CategoryData(objYearMonth, obj)
+        sumamount = sum([x['amount'] for x in moneylist])
+        numamount = len([x['amount'] for x in moneylist])
+        return sumamount, numamount
+
+    def genreamount(obj):
+        moneylist = select_GenreData(objYearMonth, obj)
+        sumamount = sum([x['amount'] for x in moneylist])
+        numamount = len([x['amount'] for x in moneylist])
+        return sumamount, numamount
+
+
+    for key in catid.keys():
+        monthlyamount[key], munthlyamountnum[key] = categoryamount(catid[key])
+        obj0+=catid[key]
+
+    for key in genreid.keys():
+        monthlyamount[key], munthlyamountnum[key] = genreamount(genreid[key])
+
+    for key in matome.keys():
+        monthlyamount[key], munthlyamountnum[key] = categoryamount(matome[key])
+
+
+    # All
+    obj1 = list(set(obj0))
+    key = 'all'
+    monthlyamount[key], munthlyamountnum[key] = categoryamount(obj1)
+
+    return monthlyamount, munthlyamountnum
 
 # In[34]:
 
@@ -2757,7 +2834,6 @@ def get_summarytab(objYearMonth):
 #     genretable = get_genressummarytable(objYearMonth)
 
     genretable = get_genressummarytableFP(objYearMonth)
-
     footertext = """
           <ul class="pager">
             {}
@@ -2876,14 +2952,15 @@ def get_yearly_summarytab_body(objYear):
         comment = inputcomment("quarter", str(objYear), "q"+str(cnt+1))
         
         mtable = monthlytableforYsummary((objYear,cnt*3+3))
-        qt = """<div class="panel panel-primary" id="q{}">
-        <div class="panel-heading">
-        {}年Q{}
+        qt = """<div class="panel panel-primary" id="q{quarter}">
+        <div class="panel-heading" data-toggle="collapse" data-target="#q{quarter}body">
+        {year}年Q{quarter}
         </div>
-        <div class="panel-body">
-        {}
+        <div class="panel-body panel-collapse collapse in" id="q{quarter}body">
+        {textbody}
         </div>
-        </div>""".format(cnt+1, objYear, cnt+1, check[cnt] + htext + comment + category[cnt] + amount[cnt]+ mtable + catn[cnt] + expensive[cnt])
+        </div>""".format(quarter=cnt+1, year=objYear,
+                         textbody = check[cnt] + htext + comment + category[cnt] + amount[cnt]+ mtable + catn[cnt] + expensive[cnt])
 #         </div>""".format(objYear, cnt+1, check[cnt] + category[cnt]+ delta[cnt]+ amount[cnt]+ mtable + catn[cnt] + expensive[cnt])
 
         
@@ -3402,7 +3479,9 @@ def get_yearly_summarytab_text(objYear):
 
     def build_expensives(expensives): #rev2.3
 
-        key = 25504225 # rev2.4 社会保障は除く
+        key0 = 25504225 # rev2.4 社会保障は除く
+        key1 = 28269167 # rev2.4 住まい
+        key2 = 28694950 # rev2.4 小遣い
 
         tableh0 = """
         <!-- output from PyJade -->
@@ -3436,23 +3515,35 @@ def get_yearly_summarytab_text(objYear):
             
             num = 0
             yen = 0
+            num0 = 0
+            yen0 = 0
+            num1 = 0
+            yen1 = 0
 
             for mlist in qlist:
                 for exp in mlist:
-                    atxt = """
+                    if exp['category_id'] == key0:
+                        num0 += 1
+                        yen0 += exp['amount']
+                    elif exp['category_id'] in (key1, key2):
+                        num1 += 1
+                        yen1 += exp['amount']
+                    else:
+                        atxt = """
                         \n\t\t<tr>\n\t\t\t<td>{month}月{day}日</td>\n\t\t\t<td>¥{amount:,}</td>
                         \t\t\t<td>{cat}</td>\n\t\t\t<td style="text-align:left;padding-left:1em">{place}</td>
                         \t\t\t<td style="text-align:left;padding-left:1em">{name}</td>\n\t\t</tr>
-                        """.format( month=int(exp['date'][5:7]),day=int(exp['date'][8:]), name=exp['name'], 
+                        """.format( month=int(exp['date'][5:7]),day=int(exp['date'][8:]), name=exp['name'],
                                         place=exp['place'], amount=round500(exp['amount']),cat=exp['category'])
-                    if exp['category_id'] != key:    
-                        txts.append(atxt)
-                    else:
-                        extxts.append(atxt)
-                    num += 1
-                    yen += exp['amount']
 
-            tableh1 = """\t<div class="panel-heading">4. 高額出費 (10,000円以上) {}件 ¥{:,} + 家賃&小遣い63万円</div>""".format(num, round500(yen))
+                        txts.append(atxt)
+                        num += 1
+                        yen += exp['amount']
+
+            tableh1 = """\t<div class="panel-heading">4. 高額出費 (10,000円以上) {}件 ¥{:,}<br />
+            \t<small>他: 社会保障/投資 {}件 ¥{:,}千円+ 家賃&小遣い{:,}千円</small></div>"""\
+                .format(num, round500(yen), num0, int(yen0/1000), int(yen1/1000))
+
 
             qtxt = tableh0 + tableh1 + tableh2 + '\n'.join(txts) + tablef
 
@@ -3501,13 +3592,12 @@ def monthlytableforYsummary(objYearMonth): #rev2.3
     objDT0 = objYearMonth 
     objDT1 = get_lastmonth(objDT0)
     objDT2 = get_lastmonth(objDT1)
-    m0yen, m0num =get_monthlyamount(objDT0, True)
-    m1yen, m1num =get_monthlyamount(objDT1, True)
-    m2yen, m2num =get_monthlyamount(objDT2, True)
+    m0yen, m0num =get_monthlyamount2(objDT0)
+    m1yen, m1num =get_monthlyamount2(objDT1)
+    m2yen, m2num =get_monthlyamount2(objDT2)
 
 #     TH = 1500
-    mkey = ['食費', '光熱費', '通信費', '社会保障', '娯楽・交際', '医療・健康', '美容', '教育・養育', '大型出費', '住まい']
-    
+
     def gettr(key, yen): # yen = [yen2, yen1, yen0]
         t0 = """
                         <tr>
@@ -3537,6 +3627,35 @@ def monthlytableforYsummary(objYearMonth): #rev2.3
         return t0 + "".join(t1) + t2
 
 
+    def gettrh(key, yen): # yen = [yen2, yen1, yen0]
+        t0 = """
+                        <tr class="info">
+                            <td style="text-align:left;padding-left:1em;">{}</td>\n""".format(key)
+        t1 = []
+        t2 =  """
+                            <td style="text-align:right;padding-right:1em;"><small>¥{:,}</small></td>
+                        </tr>        
+        """.format(sum(yen))
+
+        ###
+        mincat = min(yen) * 2.25
+        aveth = 1.75
+        minth = 9500
+        maxth = 22000
+        sumcat= sum(yen)
+        mincat2 = min(yen) + maxth
+
+
+        for myen in yen:
+            avecat = (sumcat - myen)/2 * aveth
+            if (myen > avecat or myen > mincat or myen > mincat2) and myen > minth:
+                t1t = """\t\t\t\t<td style="color:red;text-align:right;padding-right:1em;"><small>¥{val:,}</small></td>\n""".format(val = round500(myen))
+            else:
+                t1t = """\t\t\t\t<td style="text-align:right;padding-right:1em;"><small>¥{val:,}</small></td>\n""".format(val = round500(myen))
+            t1.append(t1t)
+        return t0 + "".join(t1) + t2
+
+
     summarytableh = """
     <!-- output from PyJade -->
     <div class="panel panel-default">
@@ -3560,9 +3679,20 @@ def monthlytableforYsummary(objYearMonth): #rev2.3
             m2n = m2num['all'], m1n = m1num['all'], m0n = m0num['all'])
     
     st = []
-    for key in mkey:
-        st0 = gettr(key, [m2yen[key], m1yen[key], m0yen[key]])
+
+    mkey = {}
+    matomekey = ['生活費', '公共', '変動費']
+    mkey['生活費'] = ['食費', '教育','小遣い']
+    mkey['公共'] = ['公共料金','家賃','社会保障','資産形成']
+    mkey['変動費'] = ['医療', '服飾', '娯楽', '大型出費', '家財']
+
+    key0 = '生活費'
+    for key0 in matomekey:
+        st0 = gettrh(key0, [m2yen[key0], m1yen[key0], m0yen[key0]])
         st.append(st0)
+        for key in mkey[key0]:
+            st0 = gettr(key, [m2yen[key], m1yen[key], m0yen[key]])
+            st.append(st0)
 
 
     summarytablef =   """
@@ -3581,21 +3711,10 @@ def monthlytableforYsummary(objYearMonth): #rev2.3
             </div>
             </div>
     """.format(
-            key1 = '食費/生活費', 
-        key2 = '光熱費', 
-            key3 = '通信費', 
-            key4 = '社会保障', 
-            key5 = '娯楽・交際', 
-            key6 = '医療・健康', 
-            key7 = '美容', 
-            key8 = '教育・養育', 
-            key9 = '大型出費', 
-            keya = '住まい', 
-
         val0M0 = round500(m0yen['all']),
-            val0M1 = round500(m1yen['all']),
-            val0M2 = round500(m2yen['all']),
-                val0Ms = round500(m2yen['all'] + m1yen['all'] + m0yen['all'])
+        val0M1 = round500(m1yen['all']),
+        val0M2 = round500(m2yen['all']),
+        val0Ms = round500(m2yen['all'] + m1yen['all'] + m0yen['all'])
         )
     
 
@@ -3647,7 +3766,7 @@ def totaltableforYsummary(qincome, qamount, qrent): #rev2.3
         summarytableh = """
         <!-- output from PyJade -->
         <div class="panel panel-default">
-        \t<div class="panel-heading">1. 入出金のまとめ</div>
+        \t<div class="panel-heading">1. 入出金のまとめ <small>*入金-出金+立替-立替清算で総計</small></div>
             <div class ="table-responsive">
                 <table class="table table-striped table-bordered table-hover table-condensed">
                     <thead class="bg-info">
@@ -3962,6 +4081,8 @@ def get_monthly_htmlheader(objYearMonth):
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="robots" content="noarchive">
   <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
   <title>Garnet Reports (ZAIM)</title>
 
@@ -4123,6 +4244,8 @@ def build_index():
           <meta charset="utf-8">
           <meta http-equiv="X-UA-Compatible" content="IE=edge">
           <meta name="viewport" content="width=device-width, initial-scale=1">
+          <meta name="robots" content="noindex,nofollow">
+          <meta name="robots" content="noarchive">
           <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
           <title>Garnet Reports (ZAIM)</title>
 
@@ -4743,8 +4866,9 @@ def get_reporttabbody(objYearMonth):
     
     
     # 立て替えリスト
-    renttable = get_renttable(objYearMonth)
-    
+    #renttable = get_renttable(objYearMonth)
+    renttable = ""
+
 #     # 支払い以外リスト (口座)
     tabletitle = "入金・振り替えリスト"
     moneydata = select_nonPaymentData(objYearMonth)
@@ -4810,6 +4934,11 @@ def get_reporttabbody(objYearMonth):
 # In[68]:
 
 def marge_AyashiiData(outaccountdata, outcategorydata, outgenredata):
+    oaccountlist = [(x['date'], x['place'],x['category'], x['genre']) for x in outaccountdata]
+    ocatlist = [(x['date'], x['place'],x['category'], x['genre']) for x in outcategorydata]
+    ogenrelist = [(x['date'], x['place'],x['category'], x['genre']) for x in outgenredata]
+
+
     m = []
     for m0 in outaccountdata:
         mt = {}
@@ -4817,19 +4946,34 @@ def marge_AyashiiData(outaccountdata, outcategorydata, outgenredata):
             mt[keys] = m0[keys]
         mt['from_account'] = "<u>{}</u>".format(m0['from_account'])
         m.append(mt)
+
     for m0 in outcategorydata:
-        mt = {}
-        for keys in m0.keys():
-            mt[keys] = m0[keys]
-        mt['category'] = "<u>{}</u>".format(m0['category'])
-        m.append(mt)
+        mt0 = (m0['date'], m0['place'], m0['category'], m0['genre'])
+        if mt0 in oaccountlist:
+            mt1 =  [[x['date'], x['place'], x['category'], x['genre']] for x in m]
+            indx = mt1.index(mt0)
+
+            m[indx]['category'] = "<u>{}</u>".format(m0['category'])
+        else:
+            mt = {}
+            for keys in m0.keys():
+                mt[keys] = m0[keys]
+            mt['category'] = "<u>{}</u>".format(m0['category'])
+            m.append(mt)
 
     for m0 in outgenredata:
-        mt = {}
-        for keys in m0.keys():
-            mt[keys] = m0[keys]
-        mt['genre'] = "<u>{}</u>".format(m0['genre'])
-        m.append(mt)
+        mt0 = (m0['date'], m0['place'], m0['category'], m0['genre'])
+        if mt0 in oaccountlist or mt0 in ocatlist:
+            mt1 =  [[x['date'], x['place'],  x['genre']] for x in m]
+            indx = mt1.index([m0['date'], m0['place'], m0['genre']])
+
+            m[indx]['genre'] = "<u>{}</u>".format(m0['genre'])
+        else:
+            mt = {}
+            for keys in m0.keys():
+                mt[keys] = m0[keys]
+            mt['genre'] = "<u>{}</u>".format(m0['genre'])
+            m.append(mt)
 
 
         
@@ -6842,11 +6986,11 @@ def get_yearly_summarytab_header(objYear):  # rev2.3
               </ul>
               
               <ul class="btn-group btn-group-justified  btn-group-sm" role="group" aria-label="testa" style="padding-left:0px;">
-                <li type="button" class="btn btn-default"><a href="#q1">Q1</a></button>
-                <li type="button" class="btn btn-default"><a href="#q2">Q2</a></button>
-                <li type="button" class="btn btn-default"><a href="#q3">Q3</a></button>
-                <li type="button" class="btn btn-default"><a href="#q4">Q4</a></button>
-                <li type="button" class="btn btn-default"><a href="#year">Year</a></button>
+                <li type="button" class="btn btn-default" data-toggle="collapse" data-target="#q1body"><a href="#q1">Q1</a></button>
+                <li type="button" class="btn btn-default" data-toggle="collapse" data-target="#q2body"><a href="#q2">Q2</a></button>
+                <li type="button" class="btn btn-default" data-toggle="collapse" data-target="#q3body"><a href="#q3">Q3</a></button>
+                <li type="button" class="btn btn-default" data-toggle="collapse" data-target="#q4body"><a href="#q4">Q4</a></button>
+                <li type="button" class="btn btn-default" data-toggle="collapse" data-target="#yearbody"><a href="#year">Year</a></button>
               </ul>
 
 
@@ -6900,6 +7044,8 @@ def get_quarterly_htmlheader(objYear):
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="robots" content="noarchive">
   <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
   <title>Garnet Reports (ZAIM)</title>
 
@@ -8565,7 +8711,7 @@ def get_genressummaly(objYearMonth):
             # 0ヶ月前のジャンルごとの合計金額
 
 #             aveamount = (samount0+samount1+samount2)/3
-            aveamount = (samount1+samount2)/3
+            aveamount = (samount1+samount2)/2
             
             if aveamount==0:aveamount=1
             ratio = samount0/aveamount
@@ -8610,8 +8756,16 @@ def getBiggerAmountforReport(monthlyamounts, objYearMonth):
     m = sratios[t]
     i = ratios.index(m)
 
-    while f[i][1]['y1']+f[i][1]['y2'] == 0:
+    while f[i][1]['y1']+f[i][1]['y2'] <= 1000 or f[i][1]['y0'] <= 3000:
+        if f[i][1]['y0'] > 17500:
+            break
+        # 最小値判定を入れる
+        # 先月 + 先々月 >= 1000 and 今月 > 3000
         t = t -1
+        if sratios[t] < 2:
+            t= t + 1
+            break
+
         m = sratios[t]
         i = ratios.index(m)
 
@@ -8692,7 +8846,7 @@ def getBiggerAmountforReport(monthlyamounts, objYearMonth):
     
     
     genreratio = f[i0][0][1]
-    text1genre = getBiggerAmountinGenreforReport(objYearMonth, genreratio)
+    # text1genre = getBiggerAmountinGenreforReport(objYearMonth, genreratio)
     text1genre = getBiggerAmountinGenreforReport(objYearMonth, genre1)
     textdoublegenre = getBiggerAmountinGenreforReport(objYearMonth, genre1)
 
@@ -8713,10 +8867,13 @@ def getBiggerAmountinGenreforReport(objYearMonth, objGenres):
     gm = max(gr)
     gi = gr.index(gm)
     xday = datetxt2class(g0[gi][1])
-
+    if g0[gi][2] == '':
+        place = m[gi]['name']
+    else:
+        place = g0[gi][2]+'での買い物'
 #     g0[gi]
-    textgenre = "このジャンル({})の中で特に大きい支出は{}日の{}での買い物で{:,}円です。ジャンルのうち{}%を占めます".format(
-        m[0]['genre'],xday.day, g0[gi][2], round500(g0[gi][0]), round(gm*100/5)*5)
+    textgenre = "このジャンル({})の中で特に大きい支出は{}日の{}で{:,}円です。ジャンルのうち{}%を占めます".format(
+        m[0]['genre'],xday.day, place, round500(g0[gi][0]), round(gm*100/5)*5)
 
     # TOP3
     g2 = sorted(g1)
@@ -8919,6 +9076,21 @@ def getYearlyTatekae(objYearMonth):
 
 # In[118]:
 
+def getCreditCardtextforReport(objYearMonth):
+
+    AccountCreditCard = 7992077
+    moneylist = select_fromAccount(objYearMonth,AccountCreditCard)
+
+    num = len(set((x['date'],x['place']) for x in moneylist))
+    ammount = sum([x['amount'] for x in moneylist])
+
+
+    otext = """今月のクレジットカード支払いは{:,}円、{}件でした。""".format(
+        round500(ammount), num)
+
+    return otext
+
+
 def getTatekaetextforReport(objYearMonth):
     objDT0 = objYearMonth 
     (m0rin, m0rout) = get_monthlyRent(objDT0)
@@ -8996,6 +9168,7 @@ def getReportText(objYearMonth):
     textsyokuzai = getFoodforReport(objYearMonth)
     textgaisyoku = getRestaurantforReport(objYearMonth)
     texttatekae = getTatekaetextforReport(objYearMonth)
+    textccard = getCreditCardtextforReport(objYearMonth)
     textsum = getMonthlydeltaforReport(objYearMonth)
     # print(o)
     obj = [10103]
@@ -9008,13 +9181,14 @@ def getReportText(objYearMonth):
     <p>{biggenre0}<br>
     {biguchiwake3}</p>
 
-    <p>また{big35}</p>
+    <p>また、{big35}</p>
     <p>{tatekae}</p>
+    <p>また、{ccard}</p>
     
     <p>{syokuzai}<br>
     また、{gaisyoku}</p>""".format(tsum=textsum, gaisyoku=textgaisyoku, tatekae=texttatekae,
                         biggenre0 = textbig[0], biguchiwake3 = textbig[3][0], big35 = textbig[6],
-                                syokuzai = textsyokuzai
+                                syokuzai = textsyokuzai, ccard = textccard
                        )
 
 
@@ -11000,6 +11174,8 @@ def get_yearly_htmlheader():
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="robots" content="noarchive">
   <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
   <title>Garnet Reports (ZAIM)</title>
 
@@ -11767,7 +11943,8 @@ def build_pyzaim(startYear=2016):
     
 #     objYears = range(2011,2017)
     objYears = range(startYear,y0)
-    objMonthes = range(1,13)
+    #objMonthes = range(1,13)
+    objMonthes = range(12,13)
 
     for objYear in objYears:
         for objMonth in objMonthes:
