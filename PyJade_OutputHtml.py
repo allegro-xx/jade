@@ -6446,10 +6446,30 @@ def get_weekdayJP(weekdaynum):
 def get_yearlyatmonth_amounts(objYear):
     monthlyamounts = []
     for m in range(1,13):
-        monthlyamount = get_monthlyamount((objYear,m))
+        monthlyamount = get_monthlyamount2((objYear,m))
         monthlyamounts.append(monthlyamount)
         
     return monthlyamounts
+
+
+def get_yearlyatquarter_amounts2(objYear):
+    monthlyamounts = []
+    monthlyamount0 = get_monthlyamount2((objYear,1))
+    keys = monthlyamount0[0].keys()
+    for q in range(1,5):
+        qamount = {}
+        for k in keys:
+            qamount[k] =0
+        for m in range(1,4):
+            monthlyamount = get_monthlyamount2((objYear,m+(q-1)*3))
+            for k in monthlyamount[0].keys():
+                qamount[k] += monthlyamount[0][k]
+
+        monthlyamounts.append(qamount)
+
+    return monthlyamounts
+
+
 
 def get_yearlyatmonth_amounts_report(objYear):
     monthlyamounts = []
@@ -6481,8 +6501,8 @@ def get_yearly_amount(objYear):
 #     monthlyamounts = get_yearlyatmonth_amounts_report(objYear)
     monthlyamounts = get_yearlyatmonth_amounts(objYear)
     sumamount = {}
-    for key in monthlyamounts[0].keys():
-        sumamount[key] = sum([x[key] for x in monthlyamounts])
+    for key in monthlyamounts[0][0].keys():
+        sumamount[key] = sum([x[0][key] for x in monthlyamounts])
     return sumamount
 
 
@@ -7650,11 +7670,10 @@ def get_yearmonthlyamounts_reporttab_body(objYear):
 
 def get_yearByquarterly_graphtab_body(objYear):
     graphtitle = "{}年の期ごとの推移".format(objYear)
-    quarterlyamounts = get_yearlyatquarter_amounts(objYear)
+    quarterlyamounts = get_yearlyatquarter_amounts2(objYear)
     qdata = {}
     for key in quarterlyamounts[0].keys():
         qdata[key] = [x[key] for x in quarterlyamounts]
-    qdata['公共'] = [x['光熱費']+x['社会保障']+x['通信費'] for x in quarterlyamounts]
 
 
 
@@ -7672,28 +7691,31 @@ def get_yearByquarterly_graphtab_body(objYear):
     graphbodybody1 = """
                     var graphtitle = "{graphtitle}";
                     var xticklabels = ["Q1", "Q2", "Q3", "Q4"];
-                    var data1 = {data_hendo};
-                    var data2 = {data_chika};
-                    var data3 = {data_seikatsu};
+                    var data6 = {data_hendo};
+                    var data3 = {data_chika};
+                    var data1 = {data_seikatsu};
                     var data4 = {data_kokyo};
                     var data5 = {data_ogata};
+                    var data2 = {data_kodukai};
                   """.format(graphtitle = graphtitle,
-                             data_hendo = qdata['変動費'], 
-                             data_chika = qdata['教育・養育'], 
-                             data_seikatsu = qdata['食費'],
-                             data_kokyo = qdata['公共'],
-                             data_ogata = qdata['大型出費'])
+                             data_hendo = [x+y for (x,y) in zip(qdata['変動費'],qdata['食費'])],
+                             data_chika = qdata['教育'],
+                             data_seikatsu = qdata['家賃'],
+                             data_kokyo  = [x+y for (x,y) in zip(qdata['公共料金'],qdata['社会保障'])],
+                             data_ogata = qdata['資産形成'],
+                             data_kodukai = qdata['小遣い'])
     
     #     var  data1 = [48375,3234,12324,98462];
     #                     var  data2 = [20983,83962,3234,42384];
     #                     var  data3 = [3235,33905,49835,98729];
     #                     var  data4 = [106257,16257,86257,46457];
     graphbodybody2 = """
-                    var  label1 = "変動費";
-                    var  label2 = "養育費";
-                    var  label3 = "生活費";
-                    var  label4 = "公共料金";
-                    var  label5 = "大型出費";
+                    var  label1 = "家賃";
+                    var  label2 = "小遣い";
+                    var  label3 = "教育";
+                    var  label4 = "公共料金+社会保障";
+                    var  label5 = "資産形成";
+                    var  label6 = "生活費(食費+変動費)";
 
 
                     var data = {
@@ -7739,6 +7761,15 @@ def get_yearByquarterly_graphtab_body(objYear):
                               label: label5,
                               data: data5,
                               backgroundColor: "rgba(255,99,132,0.2)",
+                              borderColor: "rgba(255,99,132,1)",
+                              borderWidth: 1,
+                              hoverBorderColor: "rgba(255,99,132,1)",
+                              hoverBorderWidth: 2,
+                          },
+                          {
+                              label: label6,
+                              data: data6,
+                              backgroundColor: "rgba(99,255,132,0.2)",
                               borderColor: "rgba(255,99,132,1)",
                               borderWidth: 1,
                               hoverBorderColor: "rgba(255,99,132,1)",
@@ -8057,11 +8088,11 @@ def get_restaurantnumbymonthly_graphtab_body(objYear):
 
 def get_yearBymonthly_graphtab_body(objYear):
     graphtitle = "{}年の月ごとの推移".format(objYear)
-    monthlyamounts = get_yearlyatmonth_amounts(objYear)
+    monthlyamounts0 = get_yearlyatmonth_amounts(objYear)
+    monthlyamounts = [x[0] for x in monthlyamounts0]
     qdata = {}
     for key in monthlyamounts[0].keys():
         qdata[key] = [x[key] for x in monthlyamounts]
-    qdata['公共'] = [x['光熱費']+x['社会保障']+x['通信費'] for x in monthlyamounts]
 
 #                <div style="width:100%;">
 
@@ -8077,25 +8108,27 @@ def get_yearBymonthly_graphtab_body(objYear):
     graphbodybody1 = """
                     var graphtitle = "{graphtitle}";
                     var xticklabels = ["1月", "2月", "3月", "4月", "5月", "6月","7月","8月","9月","10月", "11月","12月"];
-                    var data1 = {data_hendo};
-                    var data2 = {data_chika};
-                    var data3 = {data_seikatsu};
+                    var data6 = {data_hendo};
+                    var data3 = {data_chika};
+                    var data1 = {data_seikatsu};
                     var data4 = {data_kokyo};
                     var data5 = {data_ogata};
+                    var data2 = {data_kodukai};
                   """.format(graphtitle = graphtitle,
-                             data_hendo = qdata['変動費'], 
-                             data_chika = qdata['教育・養育'], 
-                             data_seikatsu = qdata['食費'],
-                             data_kokyo = qdata['公共'],
-                             data_ogata = qdata['大型出費'])
-    
-    graphbodybody2 = """
-                    var  label1 = "変動費";
-                    var  label2 = "養育費";
-                    var  label3 = "生活費";
-                    var  label4 = "公共料金";
-                    var  label5 = "大型出費";
+                             data_hendo = [x+y for (x,y) in zip(qdata['変動費'],qdata['食費'])],
+                             data_chika = qdata['教育'],
+                             data_seikatsu = qdata['家賃'],
+                             data_kokyo  = [x+y for (x,y) in zip(qdata['公共料金'],qdata['社会保障'])],
+                             data_ogata = qdata['資産形成'],
+                             data_kodukai = qdata['小遣い'])
 
+    graphbodybody2 = """
+                    var  label1 = "家賃";
+                    var  label2 = "小遣い";
+                    var  label3 = "教育";
+                    var  label4 = "公共料金+社会保障";
+                    var  label5 = "資産形成";
+                    var  label6 = "生活費(食費+変動費)";
 
                     var data = {
                       labels: xticklabels,
@@ -8144,7 +8177,17 @@ def get_yearBymonthly_graphtab_body(objYear):
                               borderWidth: 1,
                               hoverBorderColor: "rgba(255,99,132,1)",
                               hoverBorderWidth: 2,
-                          }
+                          },
+                          {
+                              label: label6,
+                              data: data6,
+                              backgroundColor: "rgba(99,255,132,0.2)",
+                              borderColor: "rgba(255,99,132,1)",
+                              borderWidth: 1,
+                              hoverBorderColor: "rgba(255,99,132,1)",
+                              hoverBorderWidth: 2,
+                          },
+
                       ]
                   };
 
@@ -8200,11 +8243,10 @@ def get_yearBymonthly_graphtab_body(objYear):
 
 def get_yearByquarterlyR_graphtab_body(objYear):
     graphtitle = "{}年の期ごとの支出率推移 (%)".format(objYear)
-    quarterlyamounts = get_yearlyatquarter_amounts(objYear)
+    quarterlyamounts = get_yearlyatquarter_amounts2(objYear)
     qdata = {}
     for key in quarterlyamounts[0].keys():
         qdata[key] = [int(x[key]/x['all']*100*10)/10 if not x['all'] ==0 else 0 for x in quarterlyamounts]
-    qdata['公共'] = [int((x['光熱費']+x['社会保障']+x['通信費'])/x['all']*100*10)/10 if not x['all'] ==0 else 0 for x in quarterlyamounts]
 
 
 
@@ -8222,29 +8264,31 @@ def get_yearByquarterlyR_graphtab_body(objYear):
     graphbodybody1 = """
                     var graphtitle = "{graphtitle}";
                     var xticklabels = ["Q1", "Q2", "Q3", "Q4"];
-                    var data1 = {data_hendo};
-                    var data2 = {data_chika};
-                    var data3 = {data_seikatsu};
+                    var data6 = {data_hendo};
+                    var data3 = {data_chika};
+                    var data1 = {data_seikatsu};
                     var data4 = {data_kokyo};
                     var data5 = {data_ogata};
+                    var data2 = {data_kodukai};
                   """.format(graphtitle = graphtitle,
-                             data_hendo = qdata['変動費'], 
-                             data_chika = qdata['教育・養育'], 
-                             data_seikatsu = qdata['食費'],
-                             data_kokyo = qdata['公共'],
-                             data_ogata = qdata['大型出費'])
+                             data_hendo = [x+y for (x,y) in zip(qdata['変動費'],qdata['食費'])],
+                             data_chika = qdata['教育'],
+                             data_seikatsu = qdata['家賃'],
+                             data_kokyo  = [x+y for (x,y) in zip(qdata['公共料金'],qdata['社会保障'])],
+                             data_ogata = qdata['資産形成'],
+                             data_kodukai = qdata['小遣い'])
     
     #     var  data1 = [48375,3234,12324,98462];
     #                     var  data2 = [20983,83962,3234,42384];
     #                     var  data3 = [3235,33905,49835,98729];
     #                     var  data4 = [106257,16257,86257,46457];
     graphbodybody2 = """
-                    var  label1 = "変動費";
-                    var  label2 = "智花";
-                    var  label3 = "生活費";
-                    var  label4 = "公共料金";
-                    var  label5 = "大型出費";
-
+                    var  label1 = "家賃";
+                    var  label2 = "小遣い";
+                    var  label3 = "教育";
+                    var  label4 = "公共料金+社会保障";
+                    var  label5 = "資産形成";
+                    var  label6 = "生活費(食費+変動費)";
 
                     var data = {
                       labels: xticklabels,
@@ -8293,7 +8337,16 @@ def get_yearByquarterlyR_graphtab_body(objYear):
                               borderWidth: 1,
                               hoverBorderColor: "rgba(255,99,132,1)",
                               hoverBorderWidth: 2,
-                          }
+                          },
+                          {
+                              label: label6,
+                              data: data6,
+                              backgroundColor: "rgba(99,255,132,0.2)",
+                              borderColor: "rgba(255,99,132,1)",
+                              borderWidth: 1,
+                              hoverBorderColor: "rgba(255,99,132,1)",
+                              hoverBorderWidth: 2,
+                          }                          
                       ]
                   };
 
@@ -8523,14 +8576,156 @@ def get_publicfeesbymonthlyR_graphtab_body(objYear):
 
 
 # In[108]:
+#
+# def get_yearBymonthlyR_graphtab_body(objYear):
+#     graphtitle = "{}年の月ごとの出金割合の推移".format(objYear)
+#     monthlyamounts = get_yearlyatmonth_amounts(objYear)
+#     qdata = {}
+#     for key in monthlyamounts[0].keys():
+#         qdata[key] = [int(x[key]/x['all']*100*10)/10 if not x['all'] ==0 else 0 for x in monthlyamounts]
+#     qdata['公共'] = [int((x['光熱費']+x['社会保障']+x['通信費'])/x['all']*100*10)/10 if not x['all'] ==0 else 0 for x in monthlyamounts]
+#
+# #                <div style="width:100%;">
+#
+#
+#     graphbodyheader = """
+#                 <div>
+#                     <canvas id="myChartMR"></canvas>
+#                 </div>
+#
+#
+#                 <script>
+#                 """
+#
+#     graphbodybody1 = """
+#                     var graphtitle = "{graphtitle}";
+#                     var xticklabels = ["1月", "2月", "3月", "4月", "5月", "6月","7月","8月","9月","10月", "11月","12月"];
+#                     var data1 = {data_hendo};
+#                     var data2 = {data_chika};
+#                     var data3 = {data_seikatsu};
+#                     var data4 = {data_kokyo};
+#                     var data5 = {data_ogata};
+#                   """.format(graphtitle = graphtitle,
+#                              data_hendo = qdata['変動費'],
+#                              data_chika = qdata['教育・養育'],
+#                              data_seikatsu = qdata['食費'],
+#                              data_kokyo = qdata['公共'],
+#                              data_ogata = qdata['大型出費'])
+#
+#     graphbodybody2 = """
+#                     var  label1 = "変動費";
+#                     var  label2 = "養育費";
+#                     var  label3 = "生活費";
+#                     var  label4 = "公共料金";
+#                     var  label5 = "大型出費";
+#
+#
+#                     var data = {
+#                       labels: xticklabels,
+#                       datasets: [
+#                           {
+#                               label: label1,
+#                               data: data1,
+#                               backgroundColor: "rgba(99,255,132,0.2)",
+#                               borderColor: "rgba(255,99,132,1)",
+#                               borderWidth: 1,
+#                               hoverBorderColor: "rgba(255,99,132,1)",
+#                               hoverBorderWidth: 2,
+#                           },
+#                           {
+#                               label: label2,
+#                               data: data2,
+#                               backgroundColor: "rgba(48,255,192,0.2)",
+#                               borderColor: "rgba(255,99,132,1)",
+#                               borderWidth: 1,
+#                               hoverBorderColor: "rgba(255,99,132,1)",
+#                               hoverBorderWidth: 2,
+#                           },
+#                           {
+#                               label: label3,
+#                               data: data3,
+#                               backgroundColor: "rgba(99,132,255,0.2)",
+#                               borderColor: "rgba(255,99,132,1)",
+#                               borderWidth: 1,
+#                               hoverBorderColor: "rgba(255,99,132,1)",
+#                               hoverBorderWidth: 2,
+#                           },
+#                           {
+#                               label: label4,
+#                               data: data4,
+#                               backgroundColor: "rgba(132,99,255,0.2)",
+#                               borderColor: "rgba(255,99,132,1)",
+#                               borderWidth: 1,
+#                               hoverBorderColor: "rgba(255,99,132,1)",
+#                               hoverBorderWidth: 2,
+#                           },
+#                           {
+#                               label: label5,
+#                               data: data5,
+#                               backgroundColor: "rgba(255,99,132,0.2)",
+#                               borderColor: "rgba(255,99,132,1)",
+#                               borderWidth: 1,
+#                               hoverBorderColor: "rgba(255,99,132,1)",
+#                               hoverBorderWidth: 2,
+#                           }
+#                       ]
+#                   };
+#
+#                   var options =  {
+#                       maintainAspectRatio:true,
+#                       responsive: true,
+#                       title:{
+#                           display:true,
+#                           text:graphtitle
+#                       },
+#                       scales: {
+#                                 xAxes: [{
+#                                         stacked: true
+#                                 }],
+#                                 yAxes: [{
+#                                         stacked: true,
+#                                 scaleLabel: {
+#                                     show: true,
+#                                     labelString: 'Value'
+#                                 },
+#                                 ticks: {
+#                                     suggestedMin: 0,
+#                                     suggestedMax: 100,
+#                                     userCallback: function(value, index, values) {
+#                                       return value+"%";
+#                                     }
+#                                   }
+#                               }]
+#                             },
+#                       tooltips: {
+#                         callbacks: {
+#                           label: function(tooltipItem,data){
+#                             var datasetLabel = data.datasets[tooltipItem.datasetIndex].label || '';
+#                             return datasetLabel + ': ' + tooltipItem.yLabel.toLocaleString()+'%';
+#                               }
+#                             }
+#                           }
+#                         }
+#
+#                     var ctx = document.getElementById("myChartMR");
+#                     var myChart = new Chart(ctx, {
+#                         type: 'bar',
+#                         data: data,
+#                         options: options
+#                     });
+#                     </script>
+#                     <!-- Chart.js ######################　-->
+#     """
+#     return graphbodyheader + graphbodybody1 + graphbodybody2
+#
 
 def get_yearBymonthlyR_graphtab_body(objYear):
-    graphtitle = "{}年の月ごとの出勤割合の推移".format(objYear)
-    monthlyamounts = get_yearlyatmonth_amounts(objYear)
+    graphtitle = "{}年の月ごとの出金割合の推移".format(objYear)
+    monthlyamounts0 = get_yearlyatmonth_amounts(objYear)
+    monthlyamounts = [x[0] for x in monthlyamounts0]
     qdata = {}
     for key in monthlyamounts[0].keys():
         qdata[key] = [int(x[key]/x['all']*100*10)/10 if not x['all'] ==0 else 0 for x in monthlyamounts]
-    qdata['公共'] = [int((x['光熱費']+x['社会保障']+x['通信費'])/x['all']*100*10)/10 if not x['all'] ==0 else 0 for x in monthlyamounts]
 
 #                <div style="width:100%;">
 
@@ -8547,24 +8742,33 @@ def get_yearBymonthlyR_graphtab_body(objYear):
     graphbodybody1 = """
                     var graphtitle = "{graphtitle}";
                     var xticklabels = ["1月", "2月", "3月", "4月", "5月", "6月","7月","8月","9月","10月", "11月","12月"];
-                    var data1 = {data_hendo};
-                    var data2 = {data_chika};
-                    var data3 = {data_seikatsu};
+                    var data6 = {data_hendo};
+                    var data3 = {data_chika};
+                    var data1 = {data_seikatsu};
                     var data4 = {data_kokyo};
                     var data5 = {data_ogata};
+                    var data2 = {data_kodukai};
                   """.format(graphtitle = graphtitle,
-                             data_hendo = qdata['変動費'], 
-                             data_chika = qdata['教育・養育'], 
-                             data_seikatsu = qdata['食費'],
-                             data_kokyo = qdata['公共'],
-                             data_ogata = qdata['大型出費'])
-    
+                             data_hendo = [x+y for (x,y) in zip(qdata['変動費'],qdata['食費'])],
+                             data_chika = qdata['教育'],
+                             data_seikatsu = qdata['家賃'],
+                             data_kokyo = [x+y for (x,y) in zip(qdata['公共料金'],qdata['社会保障'])],
+                             data_ogata = qdata['資産形成'],
+                             data_kodukai = qdata['小遣い'])
+
+
+#     matome['生活費'] = catid['食費'] + catid['教育'] + catid['小遣い']
+#     matome['変動費'] = catid['医療'] + catid['服飾'] + catid['娯楽'] + catid['大型出費'] + catid['家財']
+#     matome['公共'] = catid['家賃'] + catid['公共料金'] + catid['社会保障C']
+# '社会保障', '資産形成'
+
     graphbodybody2 = """
-                    var  label1 = "変動費";
-                    var  label2 = "養育費";
-                    var  label3 = "生活費";
-                    var  label4 = "公共料金";
-                    var  label5 = "大型出費";
+                    var  label1 = "家賃";
+                    var  label2 = "小遣い";
+                    var  label3 = "教育";
+                    var  label4 = "公共料金+社会保障";
+                    var  label5 = "資産形成";
+                    var  label6 = "生活費(食費+変動費)";
 
 
                     var data = {
@@ -8610,6 +8814,15 @@ def get_yearBymonthlyR_graphtab_body(objYear):
                               label: label5,
                               data: data5,
                               backgroundColor: "rgba(255,99,132,0.2)",
+                              borderColor: "rgba(255,99,132,1)",
+                              borderWidth: 1,
+                              hoverBorderColor: "rgba(255,99,132,1)",
+                              hoverBorderWidth: 2,
+                          },
+                          {
+                              label: label6,
+                              data: data6,
+                              backgroundColor: "rgba(99,255,132,0.2)",
                               borderColor: "rgba(255,99,132,1)",
                               borderWidth: 1,
                               hoverBorderColor: "rgba(255,99,132,1)",
@@ -10876,11 +11089,11 @@ def output_quarterly(objYear=2016):
     gtab_footer = get_quarterly_graphtab_footer(objYear) 
 
     gMtab_header = get_quarterly_Mgraphtab_header(objYear)
-    gtab_body2 = get_publicfeesbymonthly_graphtab_body(objYear)
+    gtab_body2 = "" #get_publicfeesbymonthly_graphtab_body(objYear)
     gtab_body3 = get_yearBymonthly_graphtab_body(objYear)
-    gtab_body5 = get_publicfeesbymonthlyR_graphtab_body(objYear)
+    gtab_body5 = ""#get_publicfeesbymonthlyR_graphtab_body(objYear)
     gtab_body6 = get_yearBymonthlyR_graphtab_body(objYear)
-    gtab_body7 = get_restaurantnumbymonthly_graphtab_body(objYear)
+    gtab_body7 = ""#get_restaurantnumbymonthly_graphtab_body(objYear)
     gMtab_footer = get_quarterly_Mgraphtab_footer(objYear) 
 
     
@@ -11326,7 +11539,7 @@ def get_years_graphtab_body():
         qdata[key] = [x[key] for x in monthlyamounts]
         count = count+1
     xticklabels = ', '.join(['"{}年"'.format(x) for x in range(yearfrom,yearto)])
-    qdata['公共'] = [x['光熱費']+x['社会保障']+x['通信費'] for x in monthlyamounts]
+    # qdata['公共'] = [x['光熱費']+x['社会保障']+x['通信費'] for x in monthlyamounts]
 
 #                <div style="width:100%;">
     graphbodyheader = """
@@ -11341,25 +11554,28 @@ def get_years_graphtab_body():
     graphbodybody1 = """
                     var graphtitle = "{graphtitle}";
                     var xticklabels = [{xticklabels}];
-                    var data1 = {data_hendo};
-                    var data2 = {data_chika};
-                    var data3 = {data_seikatsu};
+                    var data6 = {data_hendo};
+                    var data3 = {data_chika};
+                    var data1 = {data_seikatsu};
                     var data4 = {data_kokyo};
                     var data5 = {data_ogata};
+                    var data2 = {data_kodukai};
                   """.format(graphtitle = graphtitle,
                              xticklabels = xticklabels,
-                             data_hendo = qdata['変動費'], 
-                             data_chika = qdata['教育・養育'], 
-                             data_seikatsu = qdata['食費'],
-                             data_kokyo = qdata['公共'],
-                             data_ogata = qdata['大型出費'])
+                             data_hendo = [x+y for (x,y) in zip(qdata['変動費'],qdata['食費'])],
+                             data_chika = qdata['教育'],
+                             data_seikatsu = qdata['家賃'],
+                             data_kokyo = [x+y for (x,y) in zip(qdata['公共料金'],qdata['社会保障'])],
+                             data_ogata = qdata['資産形成'],
+                             data_kodukai = qdata['小遣い'])
     
     graphbodybody2 = """
-                    var  label1 = "変動費";
-                    var  label2 = "養育費";
-                    var  label3 = "生活費";
-                    var  label4 = "公共料金";
-                    var  label5 = "大型出費";
+                    var  label1 = "家賃";
+                    var  label2 = "小遣い";
+                    var  label3 = "教育";
+                    var  label4 = "公共料金+社会保障";
+                    var  label5 = "資産形成";
+                    var  label6 = "生活費(食費+変動費)";
 
 
                     var data = {
@@ -11405,6 +11621,15 @@ def get_years_graphtab_body():
                               label: label5,
                               data: data5,
                               backgroundColor: "rgba(255,99,132,0.2)",
+                              borderColor: "rgba(255,99,132,1)",
+                              borderWidth: 1,
+                              hoverBorderColor: "rgba(255,99,132,1)",
+                              hoverBorderWidth: 2,
+                          },
+                          {
+                              label: label6,
+                              data: data6,
+                              backgroundColor: "rgba(99,255,132,0.2)",
                               borderColor: "rgba(255,99,132,1)",
                               borderWidth: 1,
                               hoverBorderColor: "rgba(255,99,132,1)",
@@ -11478,7 +11703,7 @@ def get_yearsR_graphtab_body():
     for key in monthlyamounts[0].keys():
         qdata[key] = [x[key] for x in monthlyamounts]
     xticklabels = ', '.join(['"{}年"'.format(x) for x in range(yearfrom,yearto)])
-    qdata['公共'] = [x['光熱費']+x['社会保障']+x['通信費'] for x in monthlyamounts]
+    # qdata['公共'] = [x['光熱費']+x['社会保障']+x['通信費'] for x in monthlyamounts]
 
 #                <div style="width:100%;">
     graphbodyheader = """
@@ -11493,25 +11718,28 @@ def get_yearsR_graphtab_body():
     graphbodybody1 = """
                     var graphtitle = "{graphtitle}";
                     var xticklabels = [{xticklabels}];
-                    var data1 = {data_hendo};
-                    var data2 = {data_chika};
-                    var data3 = {data_seikatsu};
+                    var data6 = {data_hendo};
+                    var data3 = {data_chika};
+                    var data1 = {data_seikatsu};
                     var data4 = {data_kokyo};
                     var data5 = {data_ogata};
+                    var data2 = {data_kodukai};
                   """.format(graphtitle = graphtitle,
                              xticklabels = xticklabels,
-                             data_hendo = qdata['変動費'], 
-                             data_chika = qdata['教育・養育'], 
-                             data_seikatsu = qdata['食費'],
-                             data_kokyo = qdata['公共'],
-                             data_ogata = qdata['大型出費'])
+                             data_hendo = [x+y for (x,y) in zip(qdata['変動費'],qdata['食費'])],
+                             data_chika = qdata['教育'],
+                             data_seikatsu = qdata['家賃'],
+                             data_kokyo = [x+y for (x,y) in zip(qdata['公共料金'],qdata['社会保障'])],
+                             data_ogata = qdata['資産形成'],
+                             data_kodukai = qdata['小遣い'])
     
     graphbodybody2 = """
-                    var  label1 = "変動費";
-                    var  label2 = "養育費";
-                    var  label3 = "生活費";
-                    var  label4 = "公共料金";
-                    var  label5 = "大型出費";
+                    var  label1 = "家賃";
+                    var  label2 = "小遣い";
+                    var  label3 = "教育";
+                    var  label4 = "公共料金+社会保障";
+                    var  label5 = "資産形成";
+                    var  label6 = "生活費(食費+変動費)";
 
 
                     var data = {
@@ -11557,6 +11785,15 @@ def get_yearsR_graphtab_body():
                               label: label5,
                               data: data5,
                               backgroundColor: "rgba(255,99,132,0.2)",
+                              borderColor: "rgba(255,99,132,1)",
+                              borderWidth: 1,
+                              hoverBorderColor: "rgba(255,99,132,1)",
+                              hoverBorderWidth: 2,
+                          },
+                          {
+                              label: label6,
+                              data: data6,
+                              backgroundColor: "rgba(99,255,132,0.2)",
                               borderColor: "rgba(255,99,132,1)",
                               borderWidth: 1,
                               hoverBorderColor: "rgba(255,99,132,1)",
@@ -11810,10 +12047,6 @@ def get_yearlyamounts_reporttab_body():
                         {val2}
                     </tr>    
                     <tr>
-                        <td>{key3}</td>
-                        {val3}
-                    </tr>    
-                    <tr>
                         <td>{key4}</td>
                         {val4}
                     </tr>
@@ -11846,26 +12079,26 @@ def get_yearlyamounts_reporttab_body():
         
             key1 = '食費/生活費', 
                 val1 = yearlytd['食費'],
-            key2 = '光熱費', 
-                val2 = yearlytd['光熱費'],
-            key3 = '通信費', 
-                val3 = yearlytd['通信費'],
+            key2 = '公共料金',
+                val2 = yearlytd['公共料金'],
+            # key3 = '通信費',
+            #     val3 = yearlytd['通信費'],
             key4 = '社会保障', 
                 val4 = yearlytd['社会保障'],
 #            key5 = '変動費', 
 #                val5 = yearlytd['変動費'],
             key5A = '娯楽・交際', 
-                val5A = yearlytd['娯楽・交際'],
+                val5A = yearlytd['娯楽'],
             key5B = '医療・健康', 
-                val5B = yearlytd['医療・健康'],
+                val5B = yearlytd['医療'],
             key5C = '美容', 
-                val5C = yearlytd['美容'],
+                val5C = yearlytd['服飾'],
             key7 = '大型出費', 
                 val7 = yearlytd['大型出費'],
             key6 = '教育・養育', 
-                val6 = yearlytd['教育・養育'],
-            key8 = '住まい', 
-                val8 = yearlytd['住まい'])
+                val6 = yearlytd['教育'],
+            key8 = '家賃',
+                val8 = yearlytd['家賃'])
 
 
 
