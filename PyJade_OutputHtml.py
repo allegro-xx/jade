@@ -331,6 +331,7 @@ def select_zeroAccount(objYearMonth):
     where amount == 0 and 
     zaim_date like '{year}-{month:02}-%' and 
     mode == 'payment' 
+    and (amount != 0 and name != '調整額') 
     order by zaim_date 
     ;""".format(
         tablename = TABLE, year = objYearMonth[0], month = objYearMonth[1])    
@@ -385,6 +386,7 @@ def select_OutAccount(objYearMonth):
     where from_account_id not in (1,4,7,7992077,8105914,8105916,8133263) and 
     zaim_date like '{year}-{month:02}-%' and 
     mode == 'payment' 
+    and (amount != 0 and name != '調整額') 
     group by zaim_date,place,category_id  
     order by zaim_date 
     ;""".format(
@@ -399,6 +401,7 @@ def select_OutAccount(objYearMonth):
     where to_account_id not in (1,4,7, 8105937,8105914,8105916,8133263)  and 
     zaim_date like '{year}-{month:02}-%' and 
     mode != 'payment' 
+    and (amount != 0 and name != '調整額') 
     group by zaim_date,place,category_id  
     order by zaim_date 
     ;""".format(
@@ -437,6 +440,7 @@ def select_OutAccount2015(objYearMonth):
     where from_account_id not in (1,4,7, 827175, 827184)  and 
     zaim_date like '{year}-{month:02}-%' and 
     mode == 'payment' 
+    and (amount != 0 and name != '調整額') 
     group by zaim_date,place,category_id 
     order by zaim_date 
     ;""".format(
@@ -450,6 +454,7 @@ def select_fromAccount(objYearMonth,from_Account):
     from {tablename} 
     where from_account_id in ({from_account})  and 
     zaim_date like '{year}-{month:02}-%' 
+    and (amount != 0 and name != '調整額') 
     order by zaim_date;""".format(
         tablename = TABLE, year = objYearMonth[0], month = objYearMonth[1], from_account=from_Account)
 
@@ -461,6 +466,7 @@ def select_toAccount(objYearMonth, to_Account):
     from {tablename} 
     where to_account_id in ({to_account})  and 
     zaim_date like '{year}-{month:02}-%' 
+    and (amount != 0 and name != '調整額') 
     order by zaim_date;""".format(
         tablename = TABLE, year = objYearMonth[0], month = objYearMonth[1], 
         to_account=''.join(str(to_Account))[1:-1], )
@@ -528,6 +534,7 @@ def select_OutCategory(objYearMonth):
         where category_id not in ({cats})  and 
         zaim_date like '{year}-{month:02}-%' and 
         mode == 'payment' 
+        and (amount != 0 and name != '調整額') 
         group by zaim_date,place,category_id 
         order by zaim_date
         ;""".format(
@@ -578,6 +585,7 @@ def select_OutGenre(objYearMonth):
         where genre_id not in ({genres})  and 
         zaim_date like '{year}-{month:02}-%' and 
         mode == 'payment' 
+        and (amount != 0 and name != '調整額') 
         group by zaim_date,place,category_id 
         order by zaim_date
         ;""".format(
@@ -612,6 +620,7 @@ def select_nonPaymentData(objYearMonth):
         where zaim_date like '{year}-{month:02}-%' 
         and (mode != 'payment' or category_id in (28593839))
         and genre_id not in (13068828) 
+        and (amount != 0 and name != '調整額') 
         order by zaim_date
         ;""".format(
             tablename = TABLE,
@@ -635,6 +644,7 @@ def get_tatekaeData(objYearMonth):
         where zaim_date like '{year}-{month:02}-%' 
         and (mode = 'payment' and category_id not in (28593839)) 
         and from_account_id in (1, 827175, 862648)
+        and (amount != 0 and name != '調整額') 
         order by zaim_date
         ;""".format(
             tablename = TABLE,
@@ -652,6 +662,7 @@ def get_tatekaeData(objYearMonth):
         where zaim_date like '{year}-{month:02}-%' 
         and (mode = 'payment' and category_id not in (28593839)) 
         and from_account_id in (4, 827184, 862650)
+        and (amount != 0 and name != '調整額') 
         order by zaim_date
         ;""".format(
             tablename = TABLE,
@@ -1064,6 +1075,7 @@ def select_RawWholedata(objYearMonth):
     from {tablename} 
     where zaim_date like '{year}-{month:02}-%' and 
     mode == 'payment' 
+    and (amount != 0 and name != '調整額') 
     order by zaim_date
     ;""".format(
         tablename = TABLE, year = objYearMonth[0], month = objYearMonth[1])    
@@ -1092,6 +1104,7 @@ def select_RawCategoryData(objYearMonth, objCategory, order = 'time'):
     from {tablename} 
     where category_id in ({cats})  and 
     zaim_date like '{year}-{month:02}-%' 
+    and (amount != 0 and name != '調整額') 
     order by zaim_date
     ;""".format(
         tablename = TABLE, cats=''.join(str(objCategory))[1:-1], 
@@ -1102,6 +1115,7 @@ def select_RawCategoryData(objYearMonth, objCategory, order = 'time'):
         from {tablename} 
         where category_id in ({cats})  and 
         zaim_date like '{year}-{month:02}-%' 
+        and (amount != 0 and name != '調整額') 
         order by place
         ;""".format(
             tablename = TABLE, cats=''.join(str(objCategory))[1:-1], 
@@ -1170,6 +1184,7 @@ def select_RawGenreData(objYearMonth, objGenre):
     from {tablename} 
     where genre_id in ({cats})  and 
     zaim_date like '{year}-{month:02}-%'
+    and (amount != 0 and name != '調整額') 
     order by zaim_date
     ;""".format(
         tablename = TABLE, cats=''.join(str(objGenre))[1:-1], 
@@ -1233,6 +1248,7 @@ def select_RawExpenceData(objYearMonth):
     where zaim_date like '{year}-{month:02}-%' and 
     category_id not in (105, 28269167, 28694950, 28593839, 25504225)  and 
     mode=='payment' 
+    and (amount != 0 and name != '調整額') 
     order by zaim_date 
     ;""".format(
         tablename = TABLE,
@@ -1278,6 +1294,7 @@ def select_RawExpenceDataYsummary(objYearMonth):
     where zaim_date like '{year}-{month:02}-%' and 
     category_id not in (28593839)  and 
     mode=='payment' 
+    and (amount != 0 and name != '調整額') 
     order by zaim_date 
     ;""".format(
         tablename = TABLE,
@@ -11356,7 +11373,8 @@ def select_CategoryDataNum(objCategory):
     select = """select amount
     from {tablename} 
     where category_id in ({cats})
-    ;""".format(tablename = TABLE, cats=''.join(str(objCategory))[1:-1])    
+    and (amount != 0 and name != '調整額') 
+    ;""".format(tablename = TABLE, cats=''.join(str(objCategory))[1:-1])
     
     data = select_from_sqlite(select)
     return len(data)
@@ -11368,6 +11386,7 @@ def select_GenreDataNum(objGenre):
     select = """select amount 
     from {tablename} 
     where genre_id in ({cats})
+    and (amount != 0 and name != '調整額') 
     ;""".format(tablename = TABLE, cats=''.join(str(objGenre))[1:-1])
 
     data = select_from_sqlite(select)
@@ -11377,6 +11396,7 @@ def select_fromAccountNum(from_Account):
     select = """select amount 
     from {tablename} 
     where from_account_id in ({from_account})
+    and (amount != 0 and name != '調整額') 
     ;""".format(tablename = TABLE, from_account=''.join(str(from_Account))[1:-1])
 #    ;""".format(tablename = TABLE, from_account=from_Account)
 
