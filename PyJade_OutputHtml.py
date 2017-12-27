@@ -515,9 +515,10 @@ def select_OutCategory(objYearMonth):
                 # ('公共', 105),
            25504225,
                 # ('社会保障', 25504225),
-           107, 109, 106, 108, 110,111,
+           107, 109, 106, 108, 110, 111, 103,
                 # ('積)住まい・家財', 106),('積)交際費', 107),('積)娯楽', 108),
                 # ('積)教育・教養', 109),('積)医療・健康', 110)美容美容 111
+                # 103 交通
            114, 
                 # ('大型出費', 114),
            # 17503724, 11, 12, 13, 14, 15, 19,
@@ -1335,11 +1336,11 @@ def get_bigcats():
     {'name':'食費', 'cat': [101]}, 
     {'name':'公共料金', 'cat': [105]}, 
     {'name':'社会保障', 'cat': [25504225]}, 
-    {'name':'変動費', 'cat': [107, 108, 110, 111]}, 
+    {'name':'変動費', 'cat': [107, 108, 110, 111, 103]},
     {'name':'大型出費', 'cat': [114]}, 
     {'name':'教育・養育', 'cat': [25504271, 109, 28694950]}, 
     {'name':'住まい', 'cat': [28269167, 106, 28035336]},
-    {'name':'娯楽・交際', 'cat': [108, 107]},
+    {'name':'娯楽・交際', 'cat': [108, 107, 103]},
     {'name':'医療・健康', 'cat': [110]},
     {'name':'美容', 'cat': [111]},
     ]
@@ -1400,14 +1401,14 @@ def get_monthlyamount(objYearMonth, numflg = False): #rev2.3
 
 
     # (2) 積立出費のリスト
-    # ,('交際費', 107),('娯楽',108),('教育・教養', 109),('医療・健康', 110), (美容111)
-    obj = [107, 108, 110,111]
+    # ,('交際費', 107),('娯楽',108),('教育・教養', 109),('医療・健康', 110), (美容111), 交通103
+    obj = [107, 108, 110, 111, 103]
     key = '変動費'
     obj0 += obj
     monthlyamount[key], munthlyamountnum[key] = categoryamount(obj)
 
 
-    obj = [107, 108]
+    obj = [107, 108, 103]
     obj0 += obj
     key = '娯楽・交際'
     monthlyamount[key], munthlyamountnum[key] = categoryamount(obj)
@@ -1476,7 +1477,7 @@ def get_monthlyamount2(objYearMonth): #rev2.3
 
     catid['医療'] = [110]
     catid['服飾'] = [111]
-    catid['娯楽'] = [107, 108] #'娯楽・交際'
+    catid['娯楽'] = [107, 108, 103] #'娯楽・交際, 交通'
     catid['大型出費'] = [114]
     catid['家財'] = [106]
 
@@ -1565,15 +1566,15 @@ def get_monthlyamount_report(objYearMonth):
     monthlyamount['社会保障'] = get_monthlyamount_top3cat(moneylist)
 
     # (2) 積立出費のリスト
-    # ,('交際費', 107),('娯楽',108),('教育・教養', 109),('医療・健康', 110), (美容111)
+    # ,('交際費', 107),('娯楽',108),('教育・教養', 109),('医療・健康', 110), (美容111) 交通103
     key = '変動費'
-    obj = [107, 108, 110,111]
+    obj = [107, 108, 110, 111, 103]
     obj0 += obj
     # a = select_CategoryData(objYearMonth, [107, 109, 106, 108, 110])
     moneylist = select_CategoryData(objYearMonth, obj)
     monthlyamount['変動費'] = get_monthlyamount_top3cat(moneylist)
 
-    obj = [107, 108]
+    obj = [107, 108, 103]
     obj0 += obj
     key = '娯楽・交際'
     moneylist = select_CategoryData(objYearMonth, obj)
@@ -1935,9 +1936,9 @@ def print_moneytable(objYearMonth, moneydata, tabletitle, tableid, th=1000000):
 
 def get_detailtabbody(objYearMonth):
     
-    objCategory = [106, 107, 108, 110,111]
+    objCategory = [106, 107, 108, 110, 111, 103]
     # 106: ['積)家財', 106],['積)交際費', 107], ['娯楽', 108], 110: ['積)医療・健康', 110], ['積)美容・衣服', 111],
-    tabletitle = "変動費 <small>*) 娯楽・家財・交際・医療・美容</small>"
+    tabletitle = "変動費 <small>*) 娯楽・家財・交際・医療・服飾・交通</small>"
     tableid = "table1"
     moneydata = select_CategoryData(objYearMonth, objCategory)
     t1 = print_moneytable(objYearMonth, moneydata, tabletitle, tableid)
@@ -2246,7 +2247,7 @@ def checkPediodicalfees(moneydata, objYearMonth):
 def get_quarterly_detailtab_body(objYear):
     TH = 1000
 
-    objCategory = [107,  106, 108, 110, 111]
+    objCategory = [107,  106, 108, 110, 111, 103]
     tabletitle = "変動費"
     tableid = "table1"
     
@@ -2258,7 +2259,7 @@ def get_quarterly_detailtab_body(objYear):
     
     # ====
     #                 # ('積)住まい・家財', 106),('積)交際費', 107),('積)娯楽', 108),
-                # ('積)教育・教養', 109),('積)医療・健康', 110)美容美容 111
+                # ('積)教育・教養', 109),('積)医療・健康', 110)美容美容 111, 交通 103
 
 
     objCategory = [106]
@@ -6401,7 +6402,7 @@ def get_graphtabbodytext(objYearMonth):
     # 養育費
     catdatastr_CHIKA = get_categorydatastr(objYearMonth,obj)
 
-    obj = [107,  106, 108, 110,111]
+    obj = [107,  106, 108, 110, 111, 103]
     # objtitle = "積立金"
     catdatastr_HENDO = get_categorydatastr(objYearMonth,obj)
 
@@ -10282,10 +10283,10 @@ def get_genressummarytable(objYearMonth):
     def cmpamount0(t0, t1, TH=1000):
         t = (int(t0) -int(t1))
         if t > TH:
-            #cmpt = '<span class="glyphicon glyphicon-chevron-up text-danger" aria-hidden="true"></span>'
+            # cmpt = '<span class="glyphicon glyphicon-chevron-up text-danger" aria-hidden="true"></span>'
             cmpt = '<span class="label label-danger" style="padding:3px 4px;margin-left:1em;">(+)</span>'
         elif t < -TH:
-            #cmpt = '<span class="glyphicon glyphicon-chevron-down text-info" aria-hidden="true"></span>'
+            # cmpt = '<span class="glyphicon glyphicon-chevron-down text-info" aria-hidden="true"></span>'
             cmpt = '<span class="label label-primary" style="padding:3px 5px;margin-left:1em;">(-)</span>'
         else:
             cmpt = '<span class="label label-default" style="padding:3px 5px;margin-left:1em;">(0)</span>'
@@ -11283,7 +11284,10 @@ def detailgenresFP():
     {'name':'+シッターサービス', 'code':[11395977], 'sname':'+シッター', 'catFP':'教育'},
 
 
-    {'name':'レジャー費', 'code':[10801, 10803, 10802, 11987674, 11940480], 'sname':'レジャー費', 'catFP':'生活'}, #レジャー, 映画・動画, イベント, 子供娯楽, 写真
+    {'name':'レジャー費', 'code':[10801, 10803, 10802, 11987674, 11940480,
+                             10301, 10302, 10303, 10304, 10399], 'sname':'レジャー費', 'catFP':'生活'},
+        #レジャー, 映画・動画, イベント, 子供娯楽, 写真
+        #10301, 10302, 10303, 10304, 10399電車, タクシー・車, バス, 飛行機, その他
     {'name':'交際費', 'code':[10701, 10702, 10703], 'sname':'交際費', 'catFP':'生活'}, #交際, プレゼント, 贈答
     {'name':'+交際費 (親族実家)', 'code':[2891006], 'sname':'+実家関係', 'catFP':'生活'}, #親族実家
     
@@ -11463,7 +11467,9 @@ def detailgenres():
     t[key] = [
         ['交際/ご祝儀・贈答',[10701, 10702, 10703]],
         ['親族実家', [ 2891006]],
-        ['レジャー/映画/写真/イベント/子供娯楽', [10801, 10803, 10802, 11987674,11940480]],
+        ['レジャー/映画/写真/イベント/子供娯楽/交通',
+         [10801, 10803, 10802, 11987674, 11940480, 10301, 10302, 10303, 10304, 10399]],
+        # 10301, 10302, 10303, 10304, 10399; 電車, タクシー・車, バス, 飛行機, その他
         ['病院代/薬代', [11001, 11002, 11099]],
         ['運動', [4566974]],
         ['服飾', [11101]],
