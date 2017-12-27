@@ -2494,6 +2494,202 @@ def get_monthlyRent(objYearMonth):
 
 # In[45]:
 
+
+def get_monthlyAccountCreditCard(objYearMonth):
+
+    AccountCreditCard = 7992077
+    moneylist = select_fromAccount(objYearMonth,AccountCreditCard)
+
+    num = len(set((x['date'],x['place']) for x in moneylist))
+    amount = sum([x['amount'] for x in moneylist])
+
+    return amount, num
+
+
+def get_yearmonthly_cardtable(objYear):
+    cdata = []
+
+    for objMonth in range(1, 13):
+        (camount, cnum) = get_monthlyAccountCreditCard((objYear, objMonth))
+        cdata.append([camount,cnum])
+
+    rtext = []
+    ti = ["<tr><td>カード</td><td>件数</td>"]
+    to = ["<tr><td></td><td>金額</td>"]
+    snum = 0
+    samount = 0
+
+    for adata in cdata:
+        ti.append("<td>{}</td>".format(adata[1]))
+        to.append("<td>¥{:,}</td>".format(round500(adata[0])))
+        snum += adata[1]
+        samount += adata[0]
+
+    ti.append("<td><strong>{}</strong></td></tr>".format(snum))
+    to.append("<td><strong>¥{:,}</strong></td></tr>".format(round500(samount)))
+
+    tinj   = '\n\t\t\t'.join(ti)
+    toutj   = '\n\t\t\t'.join(to)
+    renttableb = '\n'.join([tinj,toutj])
+
+
+
+    renttableh = """
+    <!-- output from PyJade -->
+
+    <div class="panel panel-primary">
+        <div class ="table-responsive">
+            <table class="table table-striped table-bordered table-hover table-condensed">
+                <thead class="bg-primary">
+                    <tr>
+                        <th class="text-center" colspan="2" style="min-width: 80px;">カード出金まとめ</th>
+                        <th class="text-center">1月</th>
+                        <th class="text-center">2月</th>
+                        <th class="text-center">3月</th>
+                        <th class="text-center">4月</th>
+                        <th class="text-center">5月</th>
+                        <th class="text-center">6月</th>
+                        <th class="text-center">7月</th>
+                        <th class="text-center">8月</th>
+                        <th class="text-center">9月</th>
+                        <th class="text-center">10月</th>
+                        <th class="text-center">11月</th>
+                        <th class="text-center">12月</th>
+                        <th class="text-center"><strong>小計</strong></th>
+
+                    </tr>
+                </thead>
+                <tbody class="text-center">"""
+
+    renttablef = """
+                </tbody>
+            </table>
+        </div>
+    </div>
+    """
+
+
+    return renttableh + renttableb + renttablef
+
+
+
+
+def get_yearmonthly_banktable(objYear):
+    tin = []
+    tout = []
+    tdelta = []
+
+    for objMonth in range(1, 13):
+        (ain, aout, adelta) = get_monthlyBankData((objYear, objMonth))
+        tin.append(ain)
+        tout.append(aout)
+        tdelta.append(adelta)
+
+    rin = {}
+    rout = {}
+    rdelta = {}
+
+
+    for key in tin[0].keys(): # 月:keyからkey:月の順に変更
+        rin[key] = [x[key] for x in tin]
+        rout[key] = [x[key] for x in tout]
+        rdelta[key] = [x[key] for x in tdelta]
+
+    rtext = []
+
+    for rkey in rin:
+        ti = ["<tr><td>{key}</td><td>入金</td>".format(key = rkey)]
+        to = ["<tr><td></td><td>出金</td>"]
+        td = ["""<tr class="text-center info"><td></td><td><strong>小計</strong></td>"""]
+
+
+        for indx in range(0,12):
+            ti.append("<td>¥{:,}</td>".format(round500(rin[rkey][indx])))
+            to.append("<td>¥{:,}</td>".format(round500(rout[rkey][indx])))
+            td.append("<td><strong>¥{:,}</strong></td>".format(round500(rdelta[rkey][indx])))
+
+        ti.append("<td><strong>¥{:,}</strong></td></tr>".format(round500(sum(rin[rkey]))))
+        to.append("<td><strong>¥{:,}</strong></td></tr>".format(round500(sum(rout[rkey]))))
+        td.append("<td><strong>¥{:,}</strong></td></tr>".format(round500(sum(rdelta[rkey]))))
+
+        tinj   = '\n\t\t\t'.join(ti)
+        toutj   = '\n\t\t\t'.join(to)
+        tdeltaj = '\n\t\t\t'.join(td)
+        rtext.append('\n'.join([tinj, toutj, tdeltaj]))
+
+    renttableb = '\n'.join(rtext)
+
+
+
+    renttableh = """
+    <!-- output from PyJade -->
+
+    <div class="panel panel-primary">
+        <div class ="table-responsive">
+            <table class="table table-striped table-bordered table-hover table-condensed">
+                <thead class="bg-primary">
+                    <tr>
+                        <th class="text-center" colspan="2" style="min-width: 80px;">口座出納まとめ</th>
+                        <th class="text-center">1月</th>
+                        <th class="text-center">2月</th>
+                        <th class="text-center">3月</th>
+                        <th class="text-center">4月</th>
+                        <th class="text-center">5月</th>
+                        <th class="text-center">6月</th>
+                        <th class="text-center">7月</th>
+                        <th class="text-center">8月</th>
+                        <th class="text-center">9月</th>
+                        <th class="text-center">10月</th>
+                        <th class="text-center">11月</th>
+                        <th class="text-center">12月</th>
+                        <th class="text-center"><strong>小計</strong></th>
+
+                    </tr>
+                </thead>
+                <tbody class="text-center">"""
+
+    renttablef = """
+                </tbody>
+            </table>
+        </div>
+    </div>
+    """
+
+
+    return renttableh + renttableb + renttablef
+
+
+
+
+
+def get_monthlyBankData(objYearMonth):
+#  8105914: ['家の口座(UFJ)', 8105914],
+#  8105916: ['家の口座 (ソニー)', 8105916],
+#  8105937: ['ソニー銀行（積み立て）', 8105937],
+#  8133263: ['智花（ゆうちょ)', 8133263]}
+
+    ACCOUNT_ID = {}
+    ACCOUNT_ID['UFJ'] = 8105914
+    ACCOUNT_ID['Sony'] = 8105916
+    ACCOUNT_ID['Sony(積立)'] = 8105937
+    ACCOUNT_ID['ゆうちょ'] = 8133263
+
+    def get_abankdata(AID):
+        moneylist = select_fromAccount(objYearMonth, AID)
+        tout = sum([x['amount'] for x in moneylist if x['amount'] > 0])
+        tin = sum([abs(x['amount']) for x in moneylist if x['amount'] < 0])
+        tdelta = tin - tout
+        return tout, tin, tdelta
+
+    rout = {}
+    rin = {}
+    rdelta = {}
+    for key in ACCOUNT_ID.keys():
+        (rout[key], rin[key], rdelta[key]) = get_abankdata(ACCOUNT_ID[key])
+
+    return rin, rout, rdelta
+
+
 def get_reporttabheader (objYearMonth):
     pagerlinks = get_pagerlinks(objYearMonth)
 
@@ -2649,7 +2845,7 @@ def get_yearlypublickfees_reporttab_body(objYear):
     pfeestd = {}
 
     for objMonth in range(1,13):
-        monthlypf = get_monthlypublickfees((objYear,objMonth))
+        monthlypf = get_monthlypublickfees((objYear,objMonth), True)
         monthlypf['all'] = sum([v for k,v in monthlypf.items()])
         monthlyamounts.append(monthlypf)
 
@@ -2717,6 +2913,30 @@ def get_yearlypublickfees_reporttab_body(objYear):
                         <td>{key7}</td>
                         {td7}
                     </tr>
+                    <tr>
+                        <td>{key7a}</td>
+                        {td7a}
+                    </tr>
+                    <tr>
+                        <td>{key7b}</td>
+                        {td7b}
+                    </tr>
+                    <tr>
+                        <td>{key7c}</td>
+                        {td7c}
+                    </tr>
+                    <tr>
+                        <td>{key7d}</td>
+                        {td7d}
+                    </tr>
+                    <tr>
+                        <td>{key7e}</td>
+                        {td7e}
+                    </tr>
+                    <tr>
+                        <td>{key7f}</td>
+                        {td7f}
+                    </tr>
                   </tbody>
                   <tfoot class="bg-info">
                     <tr class="text-center" style="font-weight:bold;">
@@ -2742,13 +2962,30 @@ def get_yearlypublickfees_reporttab_body(objYear):
             key6 = 'モバイル通信費', 
             td6 = pfeestd['モバイル通信費'],
 
-            key7 = '社会保障', 
+            key7a = '貯金・積立',
+            td7a = pfeestd['貯金・積立'],
+
+            key7b = '投資(確定拠出)',
+            td7b = pfeestd['投資(確定拠出)'],
+
+            key7f = '奨学金返済',
+            td7f = pfeestd['奨学金返済'],
+
+            key7c = '積立型保険',
+            td7c = pfeestd['積立型保険'],
+
+            key7 = '社会保障',
             td7 = pfeestd['社会保障'],
 
-            key8 = '小計', 
+            key7d = '掛捨て型保険',
+            td7d = pfeestd['掛捨て型保険'],
+
+            key7e = '年金・税金',
+            td7e = pfeestd['年金・税金'],
+
+            key8 = '小計',
             td8 = pfeestd['all'],)
 
-    
 
     summarytable1 = """
                 </tfoot>
@@ -2760,6 +2997,120 @@ def get_yearlypublickfees_reporttab_body(objYear):
 
     
     return tabletabbody
+
+
+
+def get_yearlygenres_reporttab_body(objYear):
+    def get_monthlygenres(objYearMonth):
+        publickfees ={}
+
+        keys = [['生協',[10199]],
+        ['保育園等',[10901, 10904, 10905, 10907]], #習い事, 受験, 学費, 塾
+        ['シッター',[11395977]],
+        ['小遣い',[11657498]],
+        ['家賃',[11427646,10601]]
+        ]
+
+        for key in keys:
+            moneylist = select_GenreData(objYearMonth, key[1])
+            publickfees[key[0]] = round500(sum([x['amount'] for x in moneylist]))
+
+        return publickfees
+
+
+    monthlyamounts = []
+    pfeestd = {}
+
+    for objMonth in range(1,13):
+        monthlypf = get_monthlygenres((objYear,objMonth))
+        monthlyamounts.append(monthlypf)
+
+    for key in monthlyamounts[0].keys():
+        y = ["<td>¥{:,}</td>".format(round500(x[key])) for x in monthlyamounts]
+        y.append("<td><strong>¥{:,}</strong></td>".format(round500(sum([x[key] for x in monthlyamounts]))))
+        pfeestd[key] = '\n\t\t\t'.join(y)
+
+
+    summarytable0 = """
+    <!-- output from PyJade -->
+    
+    <div class="panel panel-primary">
+        <div class ="table-responsive">
+            <table class="table table-striped table-bordered table-hover table-condensed">
+                <thead class="bg-primary">
+                    <tr>
+                        <th class="text-center" style="min-width: 80px;">{objY}年</th>
+                        <th class="text-center">1月</th>
+                        <th class="text-center">2月</th>
+                        <th class="text-center">3月</th>
+
+                        <th class="text-center">4月</th>
+                        <th class="text-center">5月</th>
+                        <th class="text-center">6月</th>
+
+                        <th class="text-center">7月</th>
+                        <th class="text-center">8月</th>
+                        <th class="text-center">9月</th>
+
+                        <th class="text-center">10月</th>
+                        <th class="text-center">11月</th>
+                        <th class="text-center">12月</th>
+
+                        <th class="text-center" style="font-weight:bold">小計</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    <tr>
+                        <td>{key1}</td>
+                        {td1}
+                    </tr>    
+                    <tr>
+                        <td>{key2}</td>
+                        {td2}
+                    </tr>    
+                    <tr>
+                        <td>{key3}</td>
+                        {td3}
+                    </tr>    
+                    <tr>
+                        <td>{key4}</td>
+                        {td4}
+                    </tr>    
+                    <tr>
+                        <td>{key5}</td>
+                        {td5}
+                    </tr>  
+                  </tbody>
+                  <tfoot class="bg-info">
+""".format(
+            objY = objYear,
+            key1 = '生協',  # 生協: 10199
+            td1 = pfeestd['生協'],
+
+            key2 = '保育園等',
+            td2 = pfeestd['保育園等'], # [10901, 10904, 10905, 10907] #習い事, 受験, 学費, 塾
+
+            key3 = 'シッター',
+            td3 = pfeestd['シッター'], # '+シッターサービス':[11395977]
+
+            key4 = '小遣い',
+            td4 = pfeestd['小遣い'], # 'お小遣い'[11657498]
+
+            key5 = '家賃',
+            td5 = pfeestd['家賃'],) #'家賃':[11427646]
+
+    summarytable1 = """
+                </tfoot>
+            </table>
+        </div>
+    </div>
+"""
+    tabletabbody = "\n<!-- #### report tab ここから #### -->\n" + summarytable0 + summarytable1 +"\n<!-- #### report tab ここまで #### -->\n"
+
+
+    return tabletabbody
+
+
 
 
 
@@ -6761,7 +7112,7 @@ def get_yearlyamounts_top5_table():
 
 # In[90]:
 
-def get_monthlypublickfees(objYearMonth):
+def get_monthlypublickfees(objYearMonth, flg=False):
     publickfees ={}
     # (5) 公共料金 : Category: ('公共', 105),
     obj = [105]
@@ -6783,6 +7134,16 @@ def get_monthlypublickfees(objYearMonth):
     obj = [25504225]
     moneylist = select_CategoryData(objYearMonth, obj)
     publickfees['社会保障'] = sum([x['amount'] for x in moneylist])
+
+
+    if flg:
+        publickfees['奨学金返済'] = sum([x['amount'] for x in moneylist if x['genre_id'] in (9991569,)])
+        publickfees['貯金・積立'] = sum([x['amount'] for x in moneylist if x['genre_id'] in (13918146,)])
+        publickfees['投資(確定拠出)'] = sum([x['amount'] for x in moneylist if x['genre_id'] in (13918135,)])
+        publickfees['積立型保険'] = sum([x['amount'] for x in moneylist if x['genre_id'] in (9991457, 9991527)])
+        publickfees['掛捨て型保険'] = sum([x['amount'] for x in moneylist if x['genre_id'] in (9991459, 9991538, 9991564, 10906)])
+        publickfees['年金・税金'] = sum([x['amount'] for x in moneylist if x['genre_id'] in (9991544,9991553)])
+
     return publickfees
 
 
@@ -11079,8 +11440,11 @@ def output_quarterly(objYear=2016):
     mtab_header = get_quarterly_Mreporttab_header(objYear)
     rtab_body5 = get_yearmonthlyamounts_reporttab_body(objYear)
     rtab_body4 = get_yearlypublickfees_reporttab_body(objYear)
+    rtab_body4a = get_yearlygenres_reporttab_body(objYear)
     rtab_body6 = get_yearmonthly_renttable(objYear)
+    rtab_body6a = get_yearmonthly_banktable(objYear)
     rtab_body7 = get_yearmonthly_incomestable(objYear)
+    rtab_body7a = get_yearmonthly_cardtable(objYear)
     mtab_footer = get_quarterly_Mreporttab_footer(objYear)
     
     gtab_header = get_quarterly_graphtab_header(objYear)
@@ -11137,8 +11501,11 @@ def output_quarterly(objYear=2016):
     f.write(mtab_header) # 引数の文字列をファイルに書き込む
     f.write(rtab_body5) # 引数の文字列をファイルに書き込む
     f.write(rtab_body4) # 引数の文字列をファイルに書き込む
+    f.write(rtab_body4a) # 引数の文字列をファイルに書き込む
     f.write(rtab_body6) # 引数の文字列をファイルに書き込む
     f.write(rtab_body7) # 引数の文字列をファイルに書き込む
+    f.write(rtab_body6a) # 引数の文字列をファイルに書き込む
+    f.write(rtab_body7a) # 引数の文字列をファイルに書き込む
     f.write(mtab_footer) # 引数の文字列をファイルに書き込む
 
     f.write(gtab_header) # 引数の文字列をファイルに書き込む
