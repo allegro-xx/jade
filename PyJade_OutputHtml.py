@@ -3331,9 +3331,85 @@ def get_yearly_summarytab_body(objYear):
 # In[ ]:
 
 
+def yearly_monthlyamount(objYear):
+    yq = [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
+    qdata1 = []
+    qdata0 = []
+    for qq in yq:
+        qqdata0 = []
+        qqdata1s = 0
+        qqdata1l = 0
+        for mm in qq:
+            t = select_Wholedata((objYear,mm))
+            # 出費を計算するときは cat'口座'を引くこと。
+            monthsum = [x['amount'] for x in t if x['category'] != '口座']
+            qqdata1s += sum(monthsum)
+            qqdata1l += len(monthsum)
+            qqdata0.append([sum(monthsum),len(monthsum)])
+        qdata0.append(qqdata0)
+        qdata1.append([qqdata1s, qqdata1l])
+    return qdata0, qdata1
+
+def yearly_incomes(objYear):
+    yq = [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
+    qdata = []
+    for qq in yq:
+        qqdata = 0
+        for mm in qq:
+            incomes = get_monthlyIncomes((objYear,mm))
+            qqdata += incomes['sum']
+        qdata.append(qqdata)
+
+    #先期分
+    qqdata = 0
+    qq = yq[3]
+    for mm in qq:
+        incomes = get_monthlyIncomes((objYear-1,mm))
+        qqdata += incomes['sum']
+    qdata.append(qqdata)
+
+
+    return qdata
+
+
+def yearly_rentinout(objYear):
+    yq = [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
+    qdata = []
+    for qq in yq:
+        qqin = {}
+        qqout = {}
+        for k in ['sae', 'home', 'taka']:
+            qqin[k] = 0
+            qqout[k] = 0
+        for mm in qq:
+            tin, tout = get_monthlyRent((objYear,mm))
+            # 出費を計算するときは cat'口座'を引くこと。
+            for k in tin:
+                qqin[k]  += tin[k]
+                qqout[k] += tout[k]
+        qdata.append({'clear':qqin, 'rent':qqout})
+
+    ## 先期分
+    qqin = {}
+    qqout = {}
+    qq = yq[3]
+    for k in ['sae', 'home', 'taka']:
+        qqin[k] = 0
+        qqout[k] = 0
+    for mm in qq:
+        tin, tout = get_monthlyRent((objYear-1,mm))
+        # 出費を計算するときは cat'口座'を引くこと。
+        for k in tin:
+            qqin[k]  += tin[k]
+            qqout[k] += tout[k]
+    qdata.append({'clear':qqin, 'rent':qqout})
+
+
+    return qdata
 
 
 # In[57]:
+
 
 def get_yearly_summarytab_text(objYear):
 
@@ -3381,97 +3457,6 @@ def get_yearly_summarytab_text(objYear):
     
 ################################################
 
-    def yearly_incomes(objYear):
-        yq = [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
-        qdata = []
-        for qq in yq:
-            qqdata = 0
-            for mm in qq:
-                incomes = get_monthlyIncomes((objYear,mm))
-                qqdata += incomes['sum']
-            qdata.append(qqdata)
-
-        #先期分
-        qqdata = 0
-        qq = yq[3]
-        for mm in qq:
-            incomes = get_monthlyIncomes((objYear-1,mm))
-            qqdata += incomes['sum']
-        qdata.append(qqdata)
-
-
-        return qdata
-    
-    def yearly_monthlyamount(objYear):
-        yq = [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
-        qdata1 = []
-        qdata0 = []
-        for qq in yq:
-            qqdata0 = []
-            qqdata1s = 0
-            qqdata1l = 0
-            for mm in qq:
-                t = select_Wholedata((objYear,mm))
-                # 出費を計算するときは cat'口座'を引くこと。
-                monthsum = [x['amount'] for x in t if x['category'] != '口座']
-                qqdata1s += sum(monthsum)
-                qqdata1l += len(monthsum)
-                qqdata0.append([sum(monthsum),len(monthsum)])
-            qdata0.append(qqdata0)
-            qdata1.append([qqdata1s, qqdata1l])
-
-        # 先期分
-        qq = yq[3]
-        qqdata0 = []
-        qqdata1s = 0
-        qqdata1l = 0
-        for mm in qq:
-            t = select_Wholedata((objYear-1,mm))
-            # 出費を計算するときは cat'口座'を引くこと。
-            monthsum = [x['amount'] for x in t if x['category'] != '口座']
-            qqdata1s += sum(monthsum)
-            qqdata1l += len(monthsum)
-            qqdata0.append([sum(monthsum),len(monthsum)])
-        qdata0.append(qqdata0)
-        qdata1.append([qqdata1s, qqdata1l])
-
-
-        return qdata0, qdata1
-
-    def yearly_rentinout(objYear):
-        yq = [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
-        qdata = []
-        for qq in yq:
-            qqin = {}
-            qqout = {}
-            for k in ['sae', 'home', 'taka']:
-                qqin[k] = 0
-                qqout[k] = 0
-            for mm in qq:
-                tin, tout = get_monthlyRent((objYear,mm))
-                # 出費を計算するときは cat'口座'を引くこと。
-                for k in tin:               
-                    qqin[k]  += tin[k]
-                    qqout[k] += tout[k] 
-            qdata.append({'clear':qqin, 'rent':qqout})    
-
-        ## 先期分
-        qqin = {}
-        qqout = {}
-        qq = yq[3]
-        for k in ['sae', 'home', 'taka']:
-            qqin[k] = 0
-            qqout[k] = 0
-        for mm in qq:
-            tin, tout = get_monthlyRent((objYear-1,mm))
-            # 出費を計算するときは cat'口座'を引くこと。
-            for k in tin:               
-                qqin[k]  += tin[k]
-                qqout[k] += tout[k] 
-        qdata.append({'clear':qqin, 'rent':qqout}) 
-
-
-        return qdata
 
 
 
@@ -3622,24 +3607,6 @@ def get_yearly_summarytab_text(objYear):
 #     deltatext = build_categorydeltatext(delta[0])
 
 ################################################
-    def yearly_monthlyamount(objYear):
-        yq = [[1,2,3], [4,5,6], [7,8,9], [10,11,12]]
-        qdata1 = []
-        qdata0 = []
-        for qq in yq:
-            qqdata0 = []
-            qqdata1s = 0
-            qqdata1l = 0
-            for mm in qq:
-                t = select_Wholedata((objYear,mm))
-                # 出費を計算するときは cat'口座'を引くこと。
-                monthsum = [x['amount'] for x in t if x['category'] != '口座']
-                qqdata1s += sum(monthsum)
-                qqdata1l += len(monthsum)
-                qqdata0.append([sum(monthsum),len(monthsum)])
-            qdata0.append(qqdata0)
-            qdata1.append([qqdata1s, qqdata1l])
-        return qdata0, qdata1
 
 
 
@@ -7730,6 +7697,138 @@ def get_categorynotes(catkey): #rev2.3 やめた
 # In[ ]:
 
 
+def get_quartelytotal_reporttab_body(objYear):
+
+    qamount = yearly_monthlyamount(objYear)
+    qrent = yearly_rentinout(objYear)
+    qincome = yearly_incomes(objYear)
+    categorytext = totaltableforYreport(qincome, qamount, qrent)
+
+    return categorytext
+
+def totaltableforYreport(qincome, qamount, qrent):
+    outcomey = 0
+    renty = 0
+    cleary = 0
+
+    outcome1 = qamount[1][0][0]
+    outcome2 = qamount[1][1][0]
+    outcome3 = qamount[1][2][0]
+    outcome4 = qamount[1][3][0]
+
+    rent1 = qrent[0]['rent']['sae'] + qrent[0]['rent']['taka']
+    rent2 = qrent[1]['rent']['sae'] + qrent[1]['rent']['taka']
+    rent3 = qrent[2]['rent']['sae'] + qrent[2]['rent']['taka']
+    rent4 = qrent[3]['rent']['sae'] + qrent[3]['rent']['taka']
+
+    clear1 = qrent[0]['clear']['sae'] + qrent[0]['clear']['taka']
+    clear2 = qrent[1]['clear']['sae'] + qrent[1]['clear']['taka']
+    clear3 = qrent[2]['clear']['sae'] + qrent[2]['clear']['taka']
+    clear4 = qrent[3]['clear']['sae'] + qrent[3]['clear']['taka']
+
+    qincomey = qincome[0] + qincome[1] + qincome[2] + qincome[3]
+    outcomey = outcome1 + outcome2 + outcome3 + outcome4
+    renty = rent1 + rent2 + rent3 + rent4
+    cleary = clear1 + clear2 + clear3 + clear4
+
+    summarytableh = """
+    <!-- output from PyJade -->
+    <div class="panel panel-default">
+    \t<div class="panel-heading">入出金のまとめ <small>*入金-出金+立替-立替清算で総計</small></div>
+        <div class ="table-responsive">
+            <table class="table table-striped table-bordered table-hover table-condensed">
+                <thead class="bg-info">
+                    <tr>
+                        <th class="text-center">入出金</th>
+                        <th class="text-center">Q1</th>
+                        <th class="text-center">Q2</th>
+                        <th class="text-center">Q3</th>
+                        <th class="text-center">Q4</th>
+                        <th class="text-center">通年</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">"""
+
+    summarytableb0 = """
+                        <tr>
+                            <td>入金</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                        </tr>        
+                        """.format(round500(qincome[0]), round500(qincome[1]), round500(qincome[2]),
+                                   round500(qincome[3]), round500(qincomey))
+
+    summarytableb1 = """
+                        <tr>
+                            <td>出金</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                        </tr>        
+                        """.format(round500(outcome1), round500(outcome2), round500(outcome3),
+                                   round500(outcome4), round500(outcomey))
+
+    summarytableb2 = """
+                        <tr>
+                            <td>立替</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                        </tr>        
+                        """.format(round500(rent1), round500(rent2), round500(rent3),
+                                   round500(rent4), round500(renty))
+
+    summarytableb3 = """
+                        <tr>
+                            <td>立替清算</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                            <td style="text-align:right;padding-right:1em;">¥{:,}</td>
+                        </tr>        
+                        """.format(round500(clear1), round500(clear2), round500(clear3),
+                                   round500(clear4), round500(cleary))
+
+    total1 = qincome[0] + rent1 - outcome1 - clear1
+    total2 = qincome[1] + rent2 - outcome2 - clear2
+    total3 = qincome[2] + rent3 - outcome3 - clear3
+    total4 = qincome[3] + rent4 - outcome4 - clear4
+    totaly = qincomey + renty - outcomey - cleary
+
+    summarytablef = """
+                </tbody>
+                <tfoot class="bg-info">
+                    <tr class="text-center">
+                        <td><strong>総計</strong></td>
+                        <td style="text-align:right;padding-right:1em;"><strong>¥{:,}</strong></td>
+                        <td style="text-align:right;padding-right:1em;"><strong>¥{:,}</strong></td>
+                        <td style="text-align:right;padding-right:1em;"><strong>¥{:,}</strong></td>
+                        <td style="text-align:right;padding-right:1em;"><strong>¥{:,}</strong></td>
+                        <td style="text-align:right;padding-right:1em;"><strong>¥{:,}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+            </div>
+            </div>
+    """.format(round500(total1), round500(total2),
+               round500(total3), round500(total4), round500(totaly))
+
+
+    tabletabbody = "\n<!-- #### report tab ここから #### -->\n" +\
+                summarytableh + \
+                summarytableb0 + summarytableb1 + summarytableb2 + summarytableb3 +\
+                summarytablef +\
+                "\n<!-- #### report tab ここまで #### -->\n"
+
+    return tabletabbody
 
 
 # In[100]:
@@ -11432,6 +11531,7 @@ def output_quarterly(objYear=2016):
     htmlfooter = get_htmlfooter()
 
     rtab_header = get_quarterly_reporttab_header(objYear)
+    rtab_body0 = get_quartelytotal_reporttab_body(objYear)
     rtab_body1 = get_quartelyamounts_reporttab_body(objYear)
     rtab_body3 = get_quarterlyrenttable(objYear)
     rtab_body2 = get_Quarterly_incomestable(objYear)
@@ -11493,6 +11593,7 @@ def output_quarterly(objYear=2016):
     f.write(Stab_footer) # rev2.3
 
     f.write(rtab_header) # 引数の文字列をファイルに書き込む
+    f.write(rtab_body0) # 引数の文字列をファイルに書き込む
     f.write(rtab_body1) # 引数の文字列をファイルに書き込む
     f.write(rtab_body2) # 引数の文字列をファイルに書き込む
     f.write(rtab_body3) # 引数の文字列をファイルに書き込む
