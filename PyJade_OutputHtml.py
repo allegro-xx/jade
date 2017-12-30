@@ -3202,7 +3202,7 @@ def get_summarytab(objYearMonth):
     ttxt = "<hr>"
 #     genretable = get_genressummarytable(objYearMonth)
 
-    genretable = get_genressummarytableFP(objYearMonth)
+    # genretable = get_genressummarytableFP(objYearMonth)
     footertext = """
           <ul class="pager">
             {}
