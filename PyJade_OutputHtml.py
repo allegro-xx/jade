@@ -450,7 +450,7 @@ def select_OutAccount2015(objYearMonth):
     return data
 
 def select_fromAccount(objYearMonth,from_Account):
-    select = """select amount, zaim_date as date, category, genre, place, name, from_account 
+    select = """select amount, zaim_date as date, category, genre, place, name, from_account, genre_id, category_id  
     from {tablename} 
     where from_account_id in ({from_account})  and 
     zaim_date like '{year}-{month:02}-%' 
@@ -1983,6 +1983,17 @@ def get_detailtabbody(objYearMonth):
     moneydata0 = checkPediodicalfees(moneydata, objYearMonth)
     t5_kokyo = print_moneytable(objYearMonth, moneydata0, tabletitle,tableid)
 
+
+
+    tabletitle = "クレジットカード"
+    tableid = "tablec"
+    AccountCreditCard = 7992077
+    mdata0 = select_fromAccount(objYearMonth,AccountCreditCard)
+    moneydata = groupingZaimdata(mdata0, 0)
+    t6_card = print_moneytable(objYearMonth, moneydata,tabletitle,tableid)
+
+
+
     t0a = """
     
     <!--- 出費詳細tab中身ここから --->
@@ -2001,7 +2012,8 @@ def get_detailtabbody(objYearMonth):
     banktable = print_banktable(objYearMonth, moneydata, "銀行口座出納", "monthlybanktable")
 
     #     return t0a + t1[3] + t2[3] + t3[3] + t4[3] + t5[3] + t0b
-    return t0a + t4_gaisyoku[3] + t2_kyoiku[3] + t1_hendo[3] + t3_ogata[3]  + t5_kokyo[3]          + banktable[3] + tatekae[3] + t0b
+    return t0a + t4_gaisyoku[3] + t2_kyoiku[3] + t1_hendo[3] + t3_ogata[3]  + t5_kokyo[3]\
+           + banktable[3] + tatekae[3] + t6_card[3] + t0b
     
 #     "詳細を外食・書籍・変動・大型・公共・口座・立替・振替の順にする"
 
