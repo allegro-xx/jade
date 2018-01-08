@@ -156,9 +156,6 @@ def get_monthlyfrontgraph(objYearMonth):
         lyearamount = 2400000
 
 
-    #print(objYear)
-    #print(tyearamount)
-    #print(lyearamount)
     yearlyamountratio = int(tyearamount/lyearamount*100*10)/10
 
 
@@ -1332,18 +1329,22 @@ def select_ExpenceData(objYearMonth, TH=3000):
 
 def get_bigcats():
     #rev2.3
-    c = [ 
-    {'name':'食費', 'cat': [101]}, 
-    {'name':'公共料金', 'cat': [105]}, 
-    {'name':'社会保障', 'cat': [25504225]}, 
-    {'name':'変動費', 'cat': [107, 108, 110, 111, 103]},
-    {'name':'大型出費', 'cat': [114]}, 
-    {'name':'教育・養育', 'cat': [25504271, 109, 28694950]}, 
-    {'name':'住まい', 'cat': [28269167, 106, 28035336]},
-    {'name':'娯楽・交際', 'cat': [108, 107, 103]},
-    {'name':'医療・健康', 'cat': [110]},
-    {'name':'美容', 'cat': [111]},
-    ]
+    c = [
+        {'cat': [101], 'name': '食費'},
+        {'cat': [105], 'name': '公共料金'},
+        {'cat': [25504225], 'name': '社会保障C'},
+        {'cat': [107, 108, 110, 111, 103], 'name': '変動費'},
+        {'cat': [114, 106], 'name': '大型出費'},
+        {'cat': [25504271, 109], 'name': '教育'},
+        {'cat': [28694950], 'name': '小遣い'},
+        {'cat': [28269167, 28035336], 'name': '住まい'},
+        {'cat': [108, 107, 103], 'name': '娯楽'},
+        {'cat': [110], 'name': '医療'},
+        {'cat': [111], 'name': '服飾'},
+        {'cat': [9991459,9991538,9991544,9991553,13918033], 'name': '社会保障'},
+        {'cat': [9991457,9991527,9991564,9991569,13918135,13918146,1111111], 'name': '資産形成'},
+        ]
+
     return c
 
 
@@ -1488,11 +1489,11 @@ def get_monthlyamount2(objYearMonth): #rev2.3
     #医療保険, 医療保険, 年金, 住民税/所得税, 公文書出力
     genreid['資産形成'] = [9991457,9991527,9991564,9991569,13918135,13918146,1111111]
     # 生命保険, 生命保険, 学資保険, 奨学金, 確定拠出/投資,貯金,子供貯金
-    catid['家賃'] =  [28269167,  28035336]
+    catid['住まい'] =  [28269167,  28035336]
 
     matome['生活費'] = catid['食費'] + catid['小遣い'] \
                     + catid['医療'] + catid['服飾'] + catid['娯楽'] + catid['大型出費']
-    matome['固定費'] = catid['家賃'] + catid['公共料金'] + catid['社会保障C'] + catid['教育']
+    matome['固定費'] = catid['住まい'] + catid['公共料金'] + catid['社会保障C'] + catid['教育']
 
     # (5) 生活費 : Category: ('食費•日用品', 101),
     monthlyamount = {}
@@ -1805,7 +1806,6 @@ def print_moneytable(objYearMonth, moneydata, tabletitle, tableid, th=1000000):
 
             texts.append(atext0+atext)
             xdaymonth0 = xdaymonth
-            #print(atext)
 
         textheader = """
 
@@ -1873,7 +1873,6 @@ def print_moneytable(objYearMonth, moneydata, tabletitle, tableid, th=1000000):
 
             texts.append(atext0+atext)
             xdaymonth0 = xdaymonth
-            #print(atext)
 
         textheader = """
 
@@ -2572,7 +2571,7 @@ def get_yearmonthly_cardtable(objYear):
             <table class="table table-striped table-bordered table-hover table-condensed">
                 <thead class="bg-primary">
                     <tr>
-                        <th class="text-center" colspan="2" style="min-width: 80px;">カード出金まとめ</th>
+                        <th class="text-center" colspan="2" style="min-width: 80px;">カード出金</th>
                         <th class="text-center">1月</th>
                         <th class="text-center">2月</th>
                         <th class="text-center">3月</th>
@@ -2628,9 +2627,9 @@ def get_yearmonthly_banktable(objYear):
     rtext = []
 
     for rkey in rin:
-        ti = ["<tr><td>{key}</td><td>入金</td>".format(key = rkey)]
-        to = ["<tr><td></td><td>出金</td>"]
-        td = ["""<tr class="text-center info"><td></td><td><strong>小計</strong></td>"""]
+        ti = ["<tr><td>{key}</td><td>入</td>".format(key = rkey)]
+        to = ["<tr><td></td><td>出</td>"]
+        td = ["""<tr class="text-center info"><td></td><td><strong>計</strong></td>"""]
 
 
         for indx in range(0,12):
@@ -2659,7 +2658,7 @@ def get_yearmonthly_banktable(objYear):
             <table class="table table-striped table-bordered table-hover table-condensed">
                 <thead class="bg-primary">
                     <tr>
-                        <th class="text-center" colspan="2" style="min-width: 80px;">口座出納まとめ</th>
+                        <th class="text-center" colspan="2" style="min-width: 80px;">口座出納</th>
                         <th class="text-center">1月</th>
                         <th class="text-center">2月</th>
                         <th class="text-center">3月</th>
@@ -3007,7 +3006,7 @@ def get_yearlypublickfees_reporttab_body(objYear):
             key7 = '社会保障',
             td7 = pfeestd['社会保障'],
 
-            key7d = '掛捨て型保険',
+            key7d = '掛捨型保険',
             td7d = pfeestd['掛捨て型保険'],
 
             key7e = '年金・税金',
@@ -3556,9 +3555,10 @@ def get_yearly_summarytab_text(objYear):
 ##############################################################
 
     def categorykeys():
-        t = get_monthlyamount((2017,4))
-        amountkeys = [x for x in t]
-        ignorekeys = ['変動費', 'all', '公共料金']
+        t = get_monthlyamount2((2017,4))
+        amountkeys = [x for x in t[0]]
+        ignorekeys = ['生活費', 'all', '固定費', '社会保障C']
+
         for ik in ignorekeys:
             amountkeys.remove(ik)
         return amountkeys
@@ -3583,7 +3583,8 @@ def get_yearly_summarytab_text(objYear):
                 aqdata[k] = []
 
             for mm in qq:
-                moneydata = get_monthlyamount((objYear, mm))
+                m0 = get_monthlyamount2((objYear, mm))
+                moneydata = m0[0]
                 for k in amountkeys:
                     qdata[k] += moneydata[k]       
                     aqdata[k].append(moneydata[k])
@@ -3595,7 +3596,8 @@ def get_yearly_summarytab_text(objYear):
             qdata[k] = 0
         qq = yq[3]
         for mm in qq:
-            moneydata = get_monthlyamount((objYear-1, mm))
+            m0 = get_monthlyamount2((objYear-1, mm))
+            moneydata = m0[0]
             for k in amountkeys:
                 qdata[k] += moneydata[k]        
         qqdata.append(qdata.copy())
@@ -3716,7 +3718,11 @@ def get_yearly_summarytab_text(objYear):
             for catt in catcodename:
                 if catt['name'] == catname:
                     catcode = catt['cat']
-            t = select_CategoryData((objYear, mm), catcode)
+
+            if catname == ("社会保障" or "資産形成"):
+                t = select_GenreData((objYear, mm), catcode)
+            else:
+                t = select_CategoryData((objYear, mm), catcode)
 
             catdata = [(x['amount'], x['date'] , x['place'],x['name']) for x in t]
             catdatayen = [x['amount'] for x in t]
@@ -4032,7 +4038,7 @@ def monthlytableforYsummary(objYearMonth): #rev2.3
     mkey = {}
     matomekey = ['生活費', '固定費']
     mkey['生活費'] = ['食費', '小遣い', '医療', '服飾', '娯楽', '大型出費']
-    mkey['固定費'] = ['教育', '公共料金', '社会保障', '資産形成', '家賃']
+    mkey['固定費'] = ['教育', '公共料金', '社会保障', '資産形成', '住まい']
 
     # matome['生活費'] = catid['食費'] + catid['小遣い'] \
     #                 + catid['医療'] + catid['服飾'] + catid['娯楽'] + catid['大型出費']
@@ -5047,178 +5053,178 @@ def build_index():
 
 def get_reporttabbody(objYearMonth):
 
-    def get_monthlycattable(objYearMonth):
-        objDT0 = objYearMonth
-        objDT1 = get_lastmonth(objDT0)
-        objDT2 = get_lastmonth(objDT1)
-        m0amount =get_monthlyamount(objDT0)
-        m1amount =get_monthlyamount(objDT1)
-        m2amount =get_monthlyamount(objDT2)
-
-        def cmpamount(t0, t1, TH):
-            t = (t0 -t1)
-            if t > TH:
-                #cmpt = '<span class="glyphicon glyphicon-chevron-up text-danger" aria-hidden="true"></span>'
-                cmpt = '<span class="label label-danger" style="padding:3px 4px;margin-left:1em;">(+)</span>'
-            elif t < -TH:
-                #cmpt = '<span class="glyphicon glyphicon-chevron-down text-info" aria-hidden="true"></span>'
-                cmpt = '<span class="label label-primary" style="padding:3px 5px;margin-left:1em;">(-)</span>'
-            else:
-                cmpt = '<span class="label label-default" style="padding:3px 5px;margin-left:1em;">(0)</span>'
-
-            return cmpt
-
-        TH = 1500
-        mkey = ['食費', '公共料金', '社会保障', '変動費', '教育・養育', '大型出費', '住まい']
-
-        cmp1 = cmpamount(m0amount[mkey[0]], m1amount[mkey[0]], TH)
-        cmp2 = cmpamount(m0amount[mkey[1]], m1amount[mkey[1]], TH)
-    #     cmp2 = cmpamount(m0amount['光熱費'], m1amount['光熱費'], TH)
-    #     cmp3 = cmpamount(m0amount['通信費'],  m1amount['通信費'], TH)
-
-        cmp4 = cmpamount(m0amount[mkey[2]],  m1amount[mkey[2]], TH)
-        cmp5 = cmpamount(m0amount[mkey[3]],  m1amount[mkey[3]], TH)
-        cmp6 = cmpamount(m0amount[mkey[4]],  m1amount[mkey[4]], TH)
-        cmp7 = cmpamount(m0amount[mkey[5]],  m1amount[mkey[5]], TH)
-        cmp8 = cmpamount(m0amount[mkey[6]],  m1amount[mkey[6]], TH)
-
-        cmp0 = cmpamount(m0amount['all'],  m1amount['all'], TH)
-
-        allM0 = round500(m0amount['all']),
-        allM1 = round500(m1amount['all']),
-        allM2 = round500(m2amount['all']),
-
-        sumM0 = sum([m0amount[x] for x in mkey])
-        #         sum([m0amount[mkey[0]], m0amount['公共料金'],
-        #         m0amount['社会保障'], m0amount['変動費'], m0amount['大型出費'], m0amount['養育費']])
-        sumM1 = sum([m1amount[x] for x in mkey])
-        #     ([m1amount['食費'], m1amount['公共料金'],
-        #         m1amount['社会保障'], m1amount['変動費'], m1amount['大型出費'], m1amount['養育費']])
-        sumM2 = sum([m2amount[x] for x in mkey])
-        #     ([m2amount['食費'], m2amount['公共料金'],
-        #         m2amount['社会保障'], m2amount['変動費'], m2amount['大型出費'], m2amount['養育費']])
-
-        # sum([monthlyamount[k] for k in monthlyamount]) - 107029
-        summarytable = """
-        <!-- output from PyJade -->
-        <div class="panel panel-primary">
-            <div class ="table-responsive">
-                <table class="table table-striped table-bordered table-hover table-condensed">
-                    <thead class="bg-primary">
-                        <tr>
-                            <th class="text-center">{objYear}年</th>
-                            <th class="text-center">{monthM2}月</th>
-                            <th class="text-center">{monthM1}月</th>
-                            <th class="text-center"><u>{monthM0}月</u>
-                            <span class="label label-primary" style="margin-left:10px">¥{amountall:,}</span></th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-center">
-                        <tr>
-                            <td>{key1}</td>
-                            <td>¥{val1M2:,}</td>
-                            <td>¥{val1M1:,}</td>
-                            <td>¥{val1M0:,}{cmp1}</td>
-                        </tr>    
-    
-                        <tr>
-                            <td>{key2}</td>
-                            <td>¥{val2M2:,}</td>
-                            <td>¥{val2M1:,}</td>
-                            <td>¥{val2M0:,}{cmp2}</td>
-                        </tr>    
-    
-                        <tr>
-                            <td>{key4}</td>
-                            <td>¥{val4M2:,}</td>
-                            <td>¥{val4M1:,}</td>
-                            <td>¥{val4M0:,}{cmp4}</td>
-                        </tr>    
-    
-                        <tr>
-                            <td>{key5}</td>
-                            <td>¥{val5M2:,}</td>
-                            <td>¥{val5M1:,}</td>
-                            <td>¥{val5M0:,}{cmp5}</td>
-                        </tr>    
-    
-                        <tr>
-                            <td>{key6}</td>
-                            <td>¥{val6M2:,}</td>
-                            <td>¥{val6M1:,}</td>
-                            <td>¥{val6M0:,}{cmp6}</td>
-                        </tr>    
-    
-                        <tr>
-                            <td>{key7}</td>
-                            <td>¥{val7M2:,}</td>
-                            <td>¥{val7M1:,}</td>
-                            <td>¥{val7M0:,}{cmp7}</td>
-                        </tr>    
-    
-                        <tr>
-                            <td>{key8}</td>
-                            <td>¥{val8M2:,}</td>
-                            <td>¥{val8M1:,}</td>
-                            <td>¥{val8M0:,}{cmp7}</td>
-                        </tr>    
-    
-                    </tbody>
-                    <tfoot class="bg-info">
-                        <tr class="text-center">
-                            <td><strong>小計</strong></td>
-                            <td><strong>¥{val0M2:,}</strong></td>
-                            <td><strong>¥{val0M1:,}</strong></td>
-                            <td><strong>¥{val0M0:,}{cmp0}</strong></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-        """.format(
-                objYear = objDT0[0],
-                monthM0=objDT0[1],
-                monthM1=objDT1[1],
-                monthM2=objDT2[1],
-                amountall = round500(sumM0),
-                key1 = '食費/生活費',
-                    val1M0 = round500(m0amount[mkey[0]]),
-                    val1M1 = round500(m1amount[mkey[0]]),
-                    val1M2 = round500(m2amount[mkey[0]]),
-                key2 = '公共料金',
-                    val2M0 = round500(m0amount[mkey[1]]),
-                    val2M1 = round500(m1amount[mkey[1]]),
-                    val2M2 = round500(m2amount[mkey[1]]),
-                key4 = '社会保障',
-                    val4M0 = round500(m0amount[mkey[2]]),
-                    val4M1 = round500(m1amount[mkey[2]]),
-                    val4M2 = round500(m2amount[mkey[2]]),
-                key5 = '変動費',
-                    val5M0 = round500(m0amount[mkey[3]]),
-                    val5M1 = round500(m1amount[mkey[3]]),
-                    val5M2 = round500(m2amount[mkey[3]]),
-                key6 = '教育・養育',
-                    val6M0 = round500(m0amount[mkey[4]]),
-                    val6M1 = round500(m1amount[mkey[4]]),
-                    val6M2 = round500(m2amount[mkey[4]]),
-                key7 = '大型出費',
-                    val7M0 = round500(m0amount[mkey[5]]),
-                    val7M1 = round500(m1amount[mkey[5]]),
-                    val7M2 = round500(m2amount[mkey[5]]),
-                key8 = '住まい',
-                    val8M0 = round500(m0amount[mkey[6]]),
-                    val8M1 = round500(m1amount[mkey[6]]),
-                    val8M2 = round500(m2amount[mkey[6]]),
-
-
-                val0M0 = round500(m0amount['all']),
-                val0M1 = round500(m1amount['all']),
-                val0M2 = round500(m2amount['all']),
-            cmp0 = cmp0, cmp1 = cmp1, cmp2 = cmp2, cmp4 = cmp4,
-            cmp5 = cmp5, cmp6 = cmp6, cmp7 = cmp7
-            )
-        #mkey = ['食費', '公共料金', '社会保障', '変動費', '養育費', '大型出費', '住まい']
-        return summarytable
+    # def get_monthlycattable(objYearMonth):
+    #     objDT0 = objYearMonth
+    #     objDT1 = get_lastmonth(objDT0)
+    #     objDT2 = get_lastmonth(objDT1)
+    #     m0amount =get_monthlyamount(objDT0)
+    #     m1amount =get_monthlyamount(objDT1)
+    #     m2amount =get_monthlyamount(objDT2)
+    #
+    #     def cmpamount(t0, t1, TH):
+    #         t = (t0 -t1)
+    #         if t > TH:
+    #             #cmpt = '<span class="glyphicon glyphicon-chevron-up text-danger" aria-hidden="true"></span>'
+    #             cmpt = '<span class="label label-danger" style="padding:3px 4px;margin-left:1em;">(+)</span>'
+    #         elif t < -TH:
+    #             #cmpt = '<span class="glyphicon glyphicon-chevron-down text-info" aria-hidden="true"></span>'
+    #             cmpt = '<span class="label label-primary" style="padding:3px 5px;margin-left:1em;">(-)</span>'
+    #         else:
+    #             cmpt = '<span class="label label-default" style="padding:3px 5px;margin-left:1em;">(0)</span>'
+    #
+    #         return cmpt
+    #
+    #     TH = 1500
+    #     mkey = ['食費', '公共料金', '社会保障', '変動費', '教育・養育', '大型出費', '住まい']
+    #
+    #     cmp1 = cmpamount(m0amount[mkey[0]], m1amount[mkey[0]], TH)
+    #     cmp2 = cmpamount(m0amount[mkey[1]], m1amount[mkey[1]], TH)
+    # #     cmp2 = cmpamount(m0amount['光熱費'], m1amount['光熱費'], TH)
+    # #     cmp3 = cmpamount(m0amount['通信費'],  m1amount['通信費'], TH)
+    #
+    #     cmp4 = cmpamount(m0amount[mkey[2]],  m1amount[mkey[2]], TH)
+    #     cmp5 = cmpamount(m0amount[mkey[3]],  m1amount[mkey[3]], TH)
+    #     cmp6 = cmpamount(m0amount[mkey[4]],  m1amount[mkey[4]], TH)
+    #     cmp7 = cmpamount(m0amount[mkey[5]],  m1amount[mkey[5]], TH)
+    #     cmp8 = cmpamount(m0amount[mkey[6]],  m1amount[mkey[6]], TH)
+    #
+    #     cmp0 = cmpamount(m0amount['all'],  m1amount['all'], TH)
+    #
+    #     allM0 = round500(m0amount['all']),
+    #     allM1 = round500(m1amount['all']),
+    #     allM2 = round500(m2amount['all']),
+    #
+    #     sumM0 = sum([m0amount[x] for x in mkey])
+    #     #         sum([m0amount[mkey[0]], m0amount['公共料金'],
+    #     #         m0amount['社会保障'], m0amount['変動費'], m0amount['大型出費'], m0amount['養育費']])
+    #     sumM1 = sum([m1amount[x] for x in mkey])
+    #     #     ([m1amount['食費'], m1amount['公共料金'],
+    #     #         m1amount['社会保障'], m1amount['変動費'], m1amount['大型出費'], m1amount['養育費']])
+    #     sumM2 = sum([m2amount[x] for x in mkey])
+    #     #     ([m2amount['食費'], m2amount['公共料金'],
+    #     #         m2amount['社会保障'], m2amount['変動費'], m2amount['大型出費'], m2amount['養育費']])
+    #
+    #     # sum([monthlyamount[k] for k in monthlyamount]) - 107029
+    #     summarytable = """
+    #     <!-- output from PyJade -->
+    #     <div class="panel panel-primary">
+    #         <div class ="table-responsive">
+    #             <table class="table table-striped table-bordered table-hover table-condensed">
+    #                 <thead class="bg-primary">
+    #                     <tr>
+    #                         <th class="text-center">{objYear}年</th>
+    #                         <th class="text-center">{monthM2}月</th>
+    #                         <th class="text-center">{monthM1}月</th>
+    #                         <th class="text-center"><u>{monthM0}月</u>
+    #                         <span class="label label-primary" style="margin-left:10px">¥{amountall:,}</span></th>
+    #                     </tr>
+    #                 </thead>
+    #                 <tbody class="text-center">
+    #                     <tr>
+    #                         <td>{key1}</td>
+    #                         <td>¥{val1M2:,}</td>
+    #                         <td>¥{val1M1:,}</td>
+    #                         <td>¥{val1M0:,}{cmp1}</td>
+    #                     </tr>
+    #
+    #                     <tr>
+    #                         <td>{key2}</td>
+    #                         <td>¥{val2M2:,}</td>
+    #                         <td>¥{val2M1:,}</td>
+    #                         <td>¥{val2M0:,}{cmp2}</td>
+    #                     </tr>
+    #
+    #                     <tr>
+    #                         <td>{key4}</td>
+    #                         <td>¥{val4M2:,}</td>
+    #                         <td>¥{val4M1:,}</td>
+    #                         <td>¥{val4M0:,}{cmp4}</td>
+    #                     </tr>
+    #
+    #                     <tr>
+    #                         <td>{key5}</td>
+    #                         <td>¥{val5M2:,}</td>
+    #                         <td>¥{val5M1:,}</td>
+    #                         <td>¥{val5M0:,}{cmp5}</td>
+    #                     </tr>
+    #
+    #                     <tr>
+    #                         <td>{key6}</td>
+    #                         <td>¥{val6M2:,}</td>
+    #                         <td>¥{val6M1:,}</td>
+    #                         <td>¥{val6M0:,}{cmp6}</td>
+    #                     </tr>
+    #
+    #                     <tr>
+    #                         <td>{key7}</td>
+    #                         <td>¥{val7M2:,}</td>
+    #                         <td>¥{val7M1:,}</td>
+    #                         <td>¥{val7M0:,}{cmp7}</td>
+    #                     </tr>
+    #
+    #                     <tr>
+    #                         <td>{key8}</td>
+    #                         <td>¥{val8M2:,}</td>
+    #                         <td>¥{val8M1:,}</td>
+    #                         <td>¥{val8M0:,}{cmp7}</td>
+    #                     </tr>
+    #
+    #                 </tbody>
+    #                 <tfoot class="bg-info">
+    #                     <tr class="text-center">
+    #                         <td><strong>小計</strong></td>
+    #                         <td><strong>¥{val0M2:,}</strong></td>
+    #                         <td><strong>¥{val0M1:,}</strong></td>
+    #                         <td><strong>¥{val0M0:,}{cmp0}</strong></td>
+    #                     </tr>
+    #                 </tfoot>
+    #             </table>
+    #         </div>
+    #     </div>
+    #     """.format(
+    #             objYear = objDT0[0],
+    #             monthM0=objDT0[1],
+    #             monthM1=objDT1[1],
+    #             monthM2=objDT2[1],
+    #             amountall = round500(sumM0),
+    #             key1 = '食費/生活費',
+    #                 val1M0 = round500(m0amount[mkey[0]]),
+    #                 val1M1 = round500(m1amount[mkey[0]]),
+    #                 val1M2 = round500(m2amount[mkey[0]]),
+    #             key2 = '公共料金',
+    #                 val2M0 = round500(m0amount[mkey[1]]),
+    #                 val2M1 = round500(m1amount[mkey[1]]),
+    #                 val2M2 = round500(m2amount[mkey[1]]),
+    #             key4 = '社会保障',
+    #                 val4M0 = round500(m0amount[mkey[2]]),
+    #                 val4M1 = round500(m1amount[mkey[2]]),
+    #                 val4M2 = round500(m2amount[mkey[2]]),
+    #             key5 = '変動費',
+    #                 val5M0 = round500(m0amount[mkey[3]]),
+    #                 val5M1 = round500(m1amount[mkey[3]]),
+    #                 val5M2 = round500(m2amount[mkey[3]]),
+    #             key6 = '教育・養育',
+    #                 val6M0 = round500(m0amount[mkey[4]]),
+    #                 val6M1 = round500(m1amount[mkey[4]]),
+    #                 val6M2 = round500(m2amount[mkey[4]]),
+    #             key7 = '大型出費',
+    #                 val7M0 = round500(m0amount[mkey[5]]),
+    #                 val7M1 = round500(m1amount[mkey[5]]),
+    #                 val7M2 = round500(m2amount[mkey[5]]),
+    #             key8 = '住まい',
+    #                 val8M0 = round500(m0amount[mkey[6]]),
+    #                 val8M1 = round500(m1amount[mkey[6]]),
+    #                 val8M2 = round500(m2amount[mkey[6]]),
+    #
+    #
+    #             val0M0 = round500(m0amount['all']),
+    #             val0M1 = round500(m1amount['all']),
+    #             val0M2 = round500(m2amount['all']),
+    #         cmp0 = cmp0, cmp1 = cmp1, cmp2 = cmp2, cmp4 = cmp4,
+    #         cmp5 = cmp5, cmp6 = cmp6, cmp7 = cmp7
+    #         )
+    #     #mkey = ['食費', '公共料金', '社会保障', '変動費', '養育費', '大型出費', '住まい']
+    #     return summarytable
 
     #summarytable = get_monthlycattable(objYearMonth)
     
@@ -7587,8 +7593,6 @@ def get_quarterly_htmlheader(objYear):
     else:
         omonth = 12
     
-#     print(oyear)
-#     print(omonth)
     headertext2 = """
         <li><a href="./m{}-{:02}.html">Monthly Report</a></li>
         """.format(oyear,omonth)
@@ -8100,7 +8104,7 @@ def get_quartelyamounts_reporttab_body(objYear):
             key9 = '資産形成',
                 val9 = quarterlytd['資産形成'],
             keyA = '住まい',
-                valA = quarterlytd['家賃'])
+                valA = quarterlytd['住まい'])
 
 
 
@@ -8340,7 +8344,7 @@ def get_yearByquarterly_graphtab_body(objYear):
                                  qdata['食費'], qdata['娯楽'], qdata['医療'],
                                  qdata['服飾'], qdata['大型出費'])],
                              data_chika = qdata['教育'],
-                             data_seikatsu = qdata['家賃'],
+                             data_seikatsu = qdata['住まい'],
                              data_kokyo  = [x+y for (x,y) in zip(qdata['公共料金'],qdata['社会保障'])],
                              data_ogata = qdata['資産形成'],
                              data_kodukai = qdata['小遣い'])
@@ -8763,7 +8767,7 @@ def get_yearBymonthly_graphtab_body(objYear):
                                  qdata['食費'], qdata['娯楽'], qdata['医療'],
                                  qdata['服飾'], qdata['大型出費'])],
                              data_chika = qdata['教育'],
-                             data_seikatsu = qdata['家賃'],
+                             data_seikatsu = qdata['住まい'],
                              data_kokyo  = [x+y for (x,y) in zip(qdata['公共料金'],qdata['社会保障'])],
                              data_ogata = qdata['資産形成'],
                              data_kodukai = qdata['小遣い'])
@@ -8921,7 +8925,7 @@ def get_yearByquarterlyR_graphtab_body(objYear):
                                  qdata['食費'], qdata['娯楽'], qdata['医療'],
                                  qdata['服飾'], qdata['大型出費'])],
                              data_chika = qdata['教育'],
-                             data_seikatsu = qdata['家賃'],
+                             data_seikatsu = qdata['住まい'],
                              data_kokyo  = [x+y for (x,y) in zip(qdata['公共料金'],qdata['社会保障'])],
                              data_ogata = qdata['資産形成'],
                              data_kodukai = qdata['小遣い'])
@@ -9401,7 +9405,7 @@ def get_yearBymonthlyR_graphtab_body(objYear):
                                  qdata['食費'], qdata['娯楽'], qdata['医療'],
                                  qdata['服飾'], qdata['大型出費'])],
                              data_chika = qdata['教育'],
-                             data_seikatsu = qdata['家賃'],
+                             data_seikatsu = qdata['住まい'],
                              data_kokyo = [x+y for (x,y) in zip(qdata['公共料金'],qdata['社会保障'])],
                              data_ogata = qdata['資産形成'],
                              data_kodukai = qdata['小遣い'])
@@ -9634,7 +9638,6 @@ def getBiggerAmountforReport(monthlyamounts, objYearMonth):
 
     genre1 = f[i][0][1]
     genre1name = f[i][0][0]
-#     print(f[i])
     text1 = "この3ヶ月に対し特に大きかった支出は{}です。平均の{}倍です。".format(genre1name, round(m*10)/10)
     text1 = "この3ヶ月に対し特に大きかった支出は<u>{}</u>です。前2ヶ月の平均{:,}円に対し今月は<u>{:,}円</u>です。".format(genre1name, 
                                                                 round500(f[i][1]['ave']), round500(f[i][1]['y0']))
@@ -9652,7 +9655,6 @@ def getBiggerAmountforReport(monthlyamounts, objYearMonth):
         iiratio = "N/A"
 
     textdouble = "この三ヶ月に対して2倍以上の支出は<u>{}</u>です。比率は{}です".format(iitext, iiratio)
-#     print(text01)
 
 
     # 特に大きかった支出一個で何%を占めるか
@@ -10021,24 +10023,15 @@ def getReportText(objYearMonth):
     (a,b,objYM) = get_genressummaly(objYearMonth)
     textbig = getBiggerAmountforReport(b, objYearMonth)
 
-    #     print(textbig[0])
-#     print(textbig[1])
-#     print(textbig[2])
-#     print(textbig[3])
-#     print(textbig[4])
-#     print(textbig[5])
 
     textsyokuzai = getFoodforReport(objYearMonth)
     textgaisyoku = getRestaurantforReport(objYearMonth)
     texttatekae = getTatekaetextforReport(objYearMonth)
     textccard = getCreditCardtextforReport(objYearMonth)
     textsum = getMonthlydeltaforReport(objYearMonth)
-    # print(o)
     obj = [10103]
     o = getGenresdeltaforReport(objYM, obj)
-    # print()
 
-    # print(o)
     reporttext = """<p>{tsum}</p>
 
     <p>{biggenre0}<br>
@@ -10196,11 +10189,7 @@ def get_genrestable(objYearMonth):
     </div>
     <!-- tablelist ここまで-->"""
     
-#     print(textheader)
-#     for atext in texts:
-#         print(atext)
-#     print(textfooter)
-    
+
     genretable = textheader + tablebody + textfooter
         
     return (textheader, tablebody, textfooter, genretable)
@@ -10360,11 +10349,7 @@ def get_genrestableYear(objYear): # rev2.3
     </div>
     <!-- tablelist ここまで-->"""
     
-#     print(textheader)
-#     for atext in texts:
-#         print(atext)
-#     print(textfooter)
-    
+
     genretable = textheader + tablebody + textfooter
         
     return (textheader, tablebody, textfooter, genretable)
@@ -10532,10 +10517,6 @@ def get_genressummarytable(objYearMonth):
     </div>
     <!-- tablelist ここまで-->"""
 
-#     print(textheader)
-#     for atext in texts:
-#         print(atext)
-#     print(textfooter)
 
     genretable = textheader + tablebody + textfooter
 
@@ -11004,7 +10985,6 @@ def getLoanTable(moneydata,year):
 # moneydata = [x for x in jsonData if x['type'] == 'loan']
 # t = getLoanTable(moneydata)
 
-# print(t)
 
 
 # In[133]:
@@ -11097,7 +11077,6 @@ def getSavingsTable(moneydata,year):
 # moneydata = [x for x in jsonData if x['type'] == 'savings']
 # t = getSavingsTable(moneydata)
 
-# print(t)
 
 
 
@@ -11217,11 +11196,6 @@ def getInvestmentsTable(moneydata,year):
 
 
 
-
-# year = '2016'
-# moneydata = [x for x in jsonData if x['type'] == 'investment']
-# t = getInvestmentsTable(moneydata, '2011')
-# print(t)
 
 
 
@@ -12246,7 +12220,7 @@ def get_years_graphtab_body():
                                  qdata['食費'], qdata['娯楽'], qdata['医療'],
                                  qdata['服飾'], qdata['大型出費'])],
                              data_chika = qdata['教育'],
-                             data_seikatsu = qdata['家賃'],
+                             data_seikatsu = qdata['住まい'],
                              data_kokyo = [x+y for (x,y) in zip(qdata['公共料金'],qdata['社会保障'])],
                              data_ogata = qdata['資産形成'],
                              data_kodukai = qdata['小遣い'])
@@ -12412,7 +12386,7 @@ def get_yearsR_graphtab_body():
                                  qdata['食費'], qdata['娯楽'], qdata['医療'],
                                  qdata['服飾'], qdata['大型出費'])],
                              data_chika = qdata['教育'],
-                             data_seikatsu = qdata['家賃'],
+                             data_seikatsu = qdata['住まい'],
                              data_kokyo = [x+y for (x,y) in zip(qdata['公共料金'],qdata['社会保障'])],
                              data_ogata = qdata['資産形成'],
                              data_kodukai = qdata['小遣い'])
@@ -12782,7 +12756,7 @@ def get_yearlyamounts_reporttab_body():
             key6 = '教育・養育', 
                 val6 = yearlytd['教育'],
             key8 = '家賃',
-                val8 = yearlytd['家賃'])
+                val8 = yearlytd['住まい'])
 
 
 
