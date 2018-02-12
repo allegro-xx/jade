@@ -1372,7 +1372,6 @@ def get_monthlyamount2(objYearMonth): #rev2.3
     genreid = {}
     matome = {}
     catid['食費'] = [101]
-
     catid['服飾'] = [111]
     catid['医療'] = [110]
     catid['娯楽'] = [107, 108, 103] #'娯楽・交際, 交通'
@@ -3938,10 +3937,6 @@ def monthlytableforYsummary(objYearMonth): #rev2.3
     matomekey = ['生活費', '固定費']
     mkey['生活費'] = ['食費', '小遣い', '医療', '服飾', '娯楽', '大型出費']
     mkey['固定費'] = ['教育', '公共料金', '社会保障', '資産形成', '住まい']
-
-    # matome['生活費'] = catid['食費'] + catid['小遣い'] \
-    #                 + catid['医療'] + catid['服飾'] + catid['娯楽'] + catid['大型出費']
-    # matome['固定費'] = catid['家賃'] + catid['公共料金'] + catid['社会保障C'] + catid['教育']
 
 
     key0 = '生活費'
